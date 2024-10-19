@@ -12,6 +12,7 @@ import {
 	wallet,
 	provider,
 } from "./client.mjs";
+import { initializeXMTPClient, sendXMTPNotification } from "./notification.mjs";
 
 /**
  * Function to create the expense schema if it doesn't exist
@@ -200,6 +201,16 @@ export async function createAttestation(
 		});
 
 		console.log("Attestation created:", res);
+
+		// Initialiser le client XMTP
+		const xmtpClient = await initializeXMTPClient();
+
+		// Envoyer une notification à chaque participant
+		for (const participant of participants) {
+			const messageContent = `Une nouvelle attestation a été créée avec succès pour l'expense "${description}". Montant : ${amount}. Vous êtes impliqué dans cette transaction.`;
+			await sendXMTPNotification(xmtpClient, participant, messageContent);
+		}
+
 		return res;
 	} catch (error) {
 		console.error("Error while creating the attestation:", error);
@@ -272,7 +283,7 @@ async function main() {
 		const amount = 100; // Expense amount as uint256
 		const description = "Restaurant meal";
 		const participants = [
-			"0xabcdefabcdefabcdefabcdefabcdefabcdefabcd",
+			"0x8503d935eA859dF168625a7326f5FFC2c5807Dec",
 			"0x7890123456789012345678901234567890123456",
 		]; // Participant addresses
 		const shares = [60, 40]; // Participant shares
