@@ -17,7 +17,7 @@ dotenv.config();
 // 	process.exit(1);
 // }
 
-const contractAddress = "0x0039bcf3e71149285BE372003De5ec1460cfc2fD";
+const contractAddress = "0x2412761f2f5c9CE4407A586E16C4dF7892053C2a";
 
 // Initialize the provider
 const provider = new ethers.JsonRpcProvider(

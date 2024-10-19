@@ -15,15 +15,19 @@ contract ExpenseShare {
     }
 
     struct Expense {
-        uint256 id;
-        uint256 groupId;
-        address payer;
-        uint256 amount;
-        string description;
-        address[] participants;
-        uint256[] shares;
-        bool isSettled;
-    }
+    uint256 id;
+    uint256 groupId;
+    address payer;
+    uint256 amount;
+    string description;
+    address[] participants;
+    uint256[] shares;
+    bool isSettled;
+    string attestationId;   
+    string schemaId;        
+    string indexingValue;   
+}
+
 
     // Mappings
     mapping(uint256 => Group) public groups;
@@ -64,6 +68,14 @@ contract ExpenseShare {
         address indexed creditor,
         uint256 amount
     );
+
+    event ExpenseUpdatedWithAttestation(
+    uint256 expenseId,
+    string attestationId,
+    string schemaId,
+    string indexingValue
+    );
+
 
     /**
      * @dev Creates a new group with a unique ID, name, and list of members.
@@ -109,7 +121,7 @@ contract ExpenseShare {
         address[] memory _participants,
         uint256[] memory _shares,
         uint256 _groupId
-    ) public {
+    ) public returns (uint256) {
         require(_amount > 0, "Amount must be greater than zero");
         require(_participants.length > 0, "There must be at least one participant");
         require(groups[_groupId].isActive, "Group does not exist or is inactive");
@@ -146,6 +158,8 @@ contract ExpenseShare {
         groups[_groupId].expenseIds.push(expenseCount);
 
         emit ExpenseCreated(expense.id, _groupId, msg.sender, _amount, _description, _participants);
+
+        return expense.id;
     }
 
     /**
@@ -262,4 +276,22 @@ contract ExpenseShare {
 
         emit DebtRepaid(msg.sender, _creditor, _amount);
     }
+
+    function updateExpenseWithAttestation(
+    uint256 _expenseId,
+    string memory _attestationId,
+    string memory _schemaId,
+    string memory _indexingValue
+) public {
+    Expense storage expense = expenses[_expenseId];
+    require(expense.id != 0, "Expense does not exist");
+    require(msg.sender == expense.payer, "Only the payer can update the expense");
+
+    expense.attestationId = _attestationId;
+    expense.schemaId = _schemaId;
+    expense.indexingValue = _indexingValue;
+
+    emit ExpenseUpdatedWithAttestation(_expenseId, _attestationId, _schemaId, _indexingValue);
+}
+
 }

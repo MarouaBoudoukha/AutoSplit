@@ -2,8 +2,8 @@
   "_format": "hh-sol-cache-2",
   "files": {
     "C:\\Users\\sami-\\SKALE2\\SKALE\\AutoSplit\\contracts\\ExpenseShare.sol": {
-      "lastModificationDate": 1729335895087,
-      "contentHash": "3769c68fb6f3be3bcbda6022b38c4e14",
+      "lastModificationDate": 1729349474733,
+      "contentHash": "b3ad237a2050f24b0b096ff5cfc0f1ed",
       "sourceName": "contracts/ExpenseShare.sol",
       "solcConfig": {
         "version": "0.8.26",
