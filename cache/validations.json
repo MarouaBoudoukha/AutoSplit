@@ -1,0 +1,767 @@
+{
+  "version": "3.4",
+  "log": [
+    {
+      "contracts/ExpenseShare.sol:ExpenseShare": {
+        "src": "contracts\\ExpenseShare.sol:4",
+        "version": {
+          "withMetadata": "bc56d0dab65db39d304c74b5959de5245ab2cf489d76ec917eba598271c79958",
+          "withoutMetadata": "af45f5c86c0b0c071c2a282a3f8e0808a71d479f04759ab5dc83f78c83be23d5",
+          "linkedWithoutMetadata": "af45f5c86c0b0c071c2a282a3f8e0808a71d479f04759ab5dc83f78c83be23d5"
+        },
+        "inherit": [],
+        "libraries": [],
+        "methods": [
+          "createGroup(string,address[])",
+          "addMemberToGroup(uint256,address)",
+          "createExpense(uint256,string,address[],uint256[],uint256)",
+          "getExpense(uint256)",
+          "getUserShare(uint256,address)",
+          "settleExpense(uint256)",
+          "getGroup(uint256)",
+          "getDebtBetween(address,address)",
+          "repayDebt(address,uint256)"
+        ],
+        "linkReferences": [],
+        "errors": [
+          {
+            "kind": "state-variable-assignment",
+            "name": "expenseCount",
+            "src": "contracts\\ExpenseShare.sol:6"
+          },
+          {
+            "kind": "state-variable-assignment",
+            "name": "groupCount",
+            "src": "contracts\\ExpenseShare.sol:7"
+          }
+        ],
+        "layout": {
+          "storage": [
+            {
+              "label": "expenseCount",
+              "offset": 0,
+              "slot": "0",
+              "type": "t_uint256",
+              "contract": "ExpenseShare",
+              "src": "contracts\\ExpenseShare.sol:6"
+            },
+            {
+              "label": "groupCount",
+              "offset": 0,
+              "slot": "1",
+              "type": "t_uint256",
+              "contract": "ExpenseShare",
+              "src": "contracts\\ExpenseShare.sol:7"
+            },
+            {
+              "label": "groups",
+              "offset": 0,
+              "slot": "2",
+              "type": "t_mapping(t_uint256,t_struct(Group)20_storage)",
+              "contract": "ExpenseShare",
+              "src": "contracts\\ExpenseShare.sol:29"
+            },
+            {
+              "label": "expenses",
+              "offset": 0,
+              "slot": "3",
+              "type": "t_mapping(t_uint256,t_struct(Expense)39_storage)",
+              "contract": "ExpenseShare",
+              "src": "contracts\\ExpenseShare.sol:30"
+            },
+            {
+              "label": "groupExpenses",
+              "offset": 0,
+              "slot": "4",
+              "type": "t_mapping(t_uint256,t_array(t_uint256)dyn_storage)",
+              "contract": "ExpenseShare",
+              "src": "contracts\\ExpenseShare.sol:31"
+            },
+            {
+              "label": "debts",
+              "offset": 0,
+              "slot": "5",
+              "type": "t_mapping(t_address,t_mapping(t_address,t_uint256))",
+              "contract": "ExpenseShare",
+              "src": "contracts\\ExpenseShare.sol:34"
+            }
+          ],
+          "types": {
+            "t_address": {
+              "label": "address",
+              "numberOfBytes": "20"
+            },
+            "t_array(t_address)dyn_storage": {
+              "label": "address[]",
+              "numberOfBytes": "32"
+            },
+            "t_array(t_uint256)dyn_storage": {
+              "label": "uint256[]",
+              "numberOfBytes": "32"
+            },
+            "t_bool": {
+              "label": "bool",
+              "numberOfBytes": "1"
+            },
+            "t_mapping(t_address,t_mapping(t_address,t_uint256))": {
+              "label": "mapping(address => mapping(address => uint256))",
+              "numberOfBytes": "32"
+            },
+            "t_mapping(t_address,t_uint256)": {
+              "label": "mapping(address => uint256)",
+              "numberOfBytes": "32"
+            },
+            "t_mapping(t_uint256,t_array(t_uint256)dyn_storage)": {
+              "label": "mapping(uint256 => uint256[])",
+              "numberOfBytes": "32"
+            },
+            "t_mapping(t_uint256,t_struct(Expense)39_storage)": {
+              "label": "mapping(uint256 => struct ExpenseShare.Expense)",
+              "numberOfBytes": "32"
+            },
+            "t_mapping(t_uint256,t_struct(Group)20_storage)": {
+              "label": "mapping(uint256 => struct ExpenseShare.Group)",
+              "numberOfBytes": "32"
+            },
+            "t_string_storage": {
+              "label": "string",
+              "numberOfBytes": "32"
+            },
+            "t_struct(Expense)39_storage": {
+              "label": "struct ExpenseShare.Expense",
+              "members": [
+                {
+                  "label": "id",
+                  "type": "t_uint256",
+                  "offset": 0,
+                  "slot": "0"
+                },
+                {
+                  "label": "groupId",
+                  "type": "t_uint256",
+                  "offset": 0,
+                  "slot": "1"
+                },
+                {
+                  "label": "payer",
+                  "type": "t_address",
+                  "offset": 0,
+                  "slot": "2"
+                },
+                {
+                  "label": "amount",
+                  "type": "t_uint256",
+                  "offset": 0,
+                  "slot": "3"
+                },
+                {
+                  "label": "description",
+                  "type": "t_string_storage",
+                  "offset": 0,
+                  "slot": "4"
+                },
+                {
+                  "label": "participants",
+                  "type": "t_array(t_address)dyn_storage",
+                  "offset": 0,
+                  "slot": "5"
+                },
+                {
+                  "label": "shares",
+                  "type": "t_array(t_uint256)dyn_storage",
+                  "offset": 0,
+                  "slot": "6"
+                },
+                {
+                  "label": "isSettled",
+                  "type": "t_bool",
+                  "offset": 0,
+                  "slot": "7"
+                }
+              ],
+              "numberOfBytes": "256"
+            },
+            "t_struct(Group)20_storage": {
+              "label": "struct ExpenseShare.Group",
+              "members": [
+                {
+                  "label": "id",
+                  "type": "t_uint256",
+                  "offset": 0,
+                  "slot": "0"
+                },
+                {
+                  "label": "name",
+                  "type": "t_string_storage",
+                  "offset": 0,
+                  "slot": "1"
+                },
+                {
+                  "label": "members",
+                  "type": "t_array(t_address)dyn_storage",
+                  "offset": 0,
+                  "slot": "2"
+                },
+                {
+                  "label": "isActive",
+                  "type": "t_bool",
+                  "offset": 0,
+                  "slot": "3"
+                },
+                {
+                  "label": "expenseIds",
+                  "type": "t_array(t_uint256)dyn_storage",
+                  "offset": 0,
+                  "slot": "4"
+                }
+              ],
+              "numberOfBytes": "160"
+            },
+            "t_uint256": {
+              "label": "uint256",
+              "numberOfBytes": "32"
+            }
+          },
+          "layoutVersion": "1.2",
+          "flat": true,
+          "namespaces": {}
+        },
+        "solcVersion": "0.8.26"
+      }
+    },
+    {
+      "contracts/ExpenseShare.sol:ExpenseShare": {
+        "src": "contracts\\ExpenseShare.sol:4",
+        "version": {
+          "withMetadata": "ec890290a53b67e91dba17ef7c7d25a9e39baedbdbf4aba6b2f0e2b1663092d8",
+          "withoutMetadata": "02f9593a982855793bb6468ef9f817520442f9e8ae37cb3ef630de50e3af2d46",
+          "linkedWithoutMetadata": "02f9593a982855793bb6468ef9f817520442f9e8ae37cb3ef630de50e3af2d46"
+        },
+        "inherit": [],
+        "libraries": [],
+        "methods": [
+          "createGroup(string,address[])",
+          "addMemberToGroup(uint256,address)",
+          "createExpense(uint256,string,address[],uint256[],uint256)",
+          "getExpense(uint256)",
+          "getUserShare(uint256,address)",
+          "settleExpense(uint256)",
+          "getGroup(uint256)"
+        ],
+        "linkReferences": [],
+        "errors": [
+          {
+            "kind": "state-variable-assignment",
+            "name": "expenseCount",
+            "src": "contracts\\ExpenseShare.sol:6"
+          },
+          {
+            "kind": "state-variable-assignment",
+            "name": "groupCount",
+            "src": "contracts\\ExpenseShare.sol:7"
+          }
+        ],
+        "layout": {
+          "storage": [
+            {
+              "label": "expenseCount",
+              "offset": 0,
+              "slot": "0",
+              "type": "t_uint256",
+              "contract": "ExpenseShare",
+              "src": "contracts\\ExpenseShare.sol:6"
+            },
+            {
+              "label": "groupCount",
+              "offset": 0,
+              "slot": "1",
+              "type": "t_uint256",
+              "contract": "ExpenseShare",
+              "src": "contracts\\ExpenseShare.sol:7"
+            },
+            {
+              "label": "groups",
+              "offset": 0,
+              "slot": "2",
+              "type": "t_mapping(t_uint256,t_struct(Group)20_storage)",
+              "contract": "ExpenseShare",
+              "src": "contracts\\ExpenseShare.sol:29"
+            },
+            {
+              "label": "expenses",
+              "offset": 0,
+              "slot": "3",
+              "type": "t_mapping(t_uint256,t_struct(Expense)39_storage)",
+              "contract": "ExpenseShare",
+              "src": "contracts\\ExpenseShare.sol:30"
+            },
+            {
+              "label": "groupExpenses",
+              "offset": 0,
+              "slot": "4",
+              "type": "t_mapping(t_uint256,t_array(t_uint256)dyn_storage)",
+              "contract": "ExpenseShare",
+              "src": "contracts\\ExpenseShare.sol:31"
+            }
+          ],
+          "types": {
+            "t_address": {
+              "label": "address",
+              "numberOfBytes": "20"
+            },
+            "t_array(t_address)dyn_storage": {
+              "label": "address[]",
+              "numberOfBytes": "32"
+            },
+            "t_array(t_uint256)dyn_storage": {
+              "label": "uint256[]",
+              "numberOfBytes": "32"
+            },
+            "t_bool": {
+              "label": "bool",
+              "numberOfBytes": "1"
+            },
+            "t_mapping(t_uint256,t_array(t_uint256)dyn_storage)": {
+              "label": "mapping(uint256 => uint256[])",
+              "numberOfBytes": "32"
+            },
+            "t_mapping(t_uint256,t_struct(Expense)39_storage)": {
+              "label": "mapping(uint256 => struct ExpenseShare.Expense)",
+              "numberOfBytes": "32"
+            },
+            "t_mapping(t_uint256,t_struct(Group)20_storage)": {
+              "label": "mapping(uint256 => struct ExpenseShare.Group)",
+              "numberOfBytes": "32"
+            },
+            "t_string_storage": {
+              "label": "string",
+              "numberOfBytes": "32"
+            },
+            "t_struct(Expense)39_storage": {
+              "label": "struct ExpenseShare.Expense",
+              "members": [
+                {
+                  "label": "id",
+                  "type": "t_uint256",
+                  "offset": 0,
+                  "slot": "0"
+                },
+                {
+                  "label": "groupId",
+                  "type": "t_uint256",
+                  "offset": 0,
+                  "slot": "1"
+                },
+                {
+                  "label": "payer",
+                  "type": "t_address",
+                  "offset": 0,
+                  "slot": "2"
+                },
+                {
+                  "label": "amount",
+                  "type": "t_uint256",
+                  "offset": 0,
+                  "slot": "3"
+                },
+                {
+                  "label": "description",
+                  "type": "t_string_storage",
+                  "offset": 0,
+                  "slot": "4"
+                },
+                {
+                  "label": "participants",
+                  "type": "t_array(t_address)dyn_storage",
+                  "offset": 0,
+                  "slot": "5"
+                },
+                {
+                  "label": "shares",
+                  "type": "t_array(t_uint256)dyn_storage",
+                  "offset": 0,
+                  "slot": "6"
+                },
+                {
+                  "label": "isSettled",
+                  "type": "t_bool",
+                  "offset": 0,
+                  "slot": "7"
+                }
+              ],
+              "numberOfBytes": "256"
+            },
+            "t_struct(Group)20_storage": {
+              "label": "struct ExpenseShare.Group",
+              "members": [
+                {
+                  "label": "id",
+                  "type": "t_uint256",
+                  "offset": 0,
+                  "slot": "0"
+                },
+                {
+                  "label": "name",
+                  "type": "t_string_storage",
+                  "offset": 0,
+                  "slot": "1"
+                },
+                {
+                  "label": "members",
+                  "type": "t_array(t_address)dyn_storage",
+                  "offset": 0,
+                  "slot": "2"
+                },
+                {
+                  "label": "isActive",
+                  "type": "t_bool",
+                  "offset": 0,
+                  "slot": "3"
+                },
+                {
+                  "label": "expenseIds",
+                  "type": "t_array(t_uint256)dyn_storage",
+                  "offset": 0,
+                  "slot": "4"
+                }
+              ],
+              "numberOfBytes": "160"
+            },
+            "t_uint256": {
+              "label": "uint256",
+              "numberOfBytes": "32"
+            }
+          },
+          "layoutVersion": "1.2",
+          "flat": true,
+          "namespaces": {}
+        },
+        "solcVersion": "0.8.26"
+      }
+    },
+    {
+      "contracts/ExpenseShare.sol:ExpenseShare": {
+        "src": "contracts\\ExpenseShare.sol:4",
+        "version": {
+          "withMetadata": "e016f0388263351fb93bf3c09f6df97c0a42c14dde880bfdbf9508fbd8334298",
+          "withoutMetadata": "c5424d226ff8400faff0cd8a8afe38a3ea057da14cffccacf9622bb58a29b21a",
+          "linkedWithoutMetadata": "c5424d226ff8400faff0cd8a8afe38a3ea057da14cffccacf9622bb58a29b21a"
+        },
+        "inherit": [],
+        "libraries": [],
+        "methods": [
+          "createGroup(string,address[])",
+          "createExpense(uint256,uint256,string,address[])",
+          "getGroupExpenses(uint256)",
+          "addMemberToGroup(uint256,address)",
+          "settleExpense(uint256)"
+        ],
+        "linkReferences": [],
+        "errors": [
+          {
+            "kind": "state-variable-assignment",
+            "name": "expenseCount",
+            "src": "contracts\\ExpenseShare.sol:6"
+          },
+          {
+            "kind": "state-variable-assignment",
+            "name": "groupCount",
+            "src": "contracts\\ExpenseShare.sol:7"
+          }
+        ],
+        "layout": {
+          "storage": [
+            {
+              "label": "expenseCount",
+              "offset": 0,
+              "slot": "0",
+              "type": "t_uint256",
+              "contract": "ExpenseShare",
+              "src": "contracts\\ExpenseShare.sol:6"
+            },
+            {
+              "label": "groupCount",
+              "offset": 0,
+              "slot": "1",
+              "type": "t_uint256",
+              "contract": "ExpenseShare",
+              "src": "contracts\\ExpenseShare.sol:7"
+            },
+            {
+              "label": "groups",
+              "offset": 0,
+              "slot": "2",
+              "type": "t_mapping(t_uint256,t_struct(Group)17_storage)",
+              "contract": "ExpenseShare",
+              "src": "contracts\\ExpenseShare.sol:27"
+            },
+            {
+              "label": "expenses",
+              "offset": 0,
+              "slot": "3",
+              "type": "t_mapping(t_uint256,t_struct(Expense)33_storage)",
+              "contract": "ExpenseShare",
+              "src": "contracts\\ExpenseShare.sol:28"
+            },
+            {
+              "label": "groupExpenses",
+              "offset": 0,
+              "slot": "4",
+              "type": "t_mapping(t_uint256,t_array(t_uint256)dyn_storage)",
+              "contract": "ExpenseShare",
+              "src": "contracts\\ExpenseShare.sol:29"
+            }
+          ],
+          "types": {
+            "t_address": {
+              "label": "address",
+              "numberOfBytes": "20"
+            },
+            "t_array(t_address)dyn_storage": {
+              "label": "address[]",
+              "numberOfBytes": "32"
+            },
+            "t_array(t_uint256)dyn_storage": {
+              "label": "uint256[]",
+              "numberOfBytes": "32"
+            },
+            "t_bool": {
+              "label": "bool",
+              "numberOfBytes": "1"
+            },
+            "t_mapping(t_uint256,t_array(t_uint256)dyn_storage)": {
+              "label": "mapping(uint256 => uint256[])",
+              "numberOfBytes": "32"
+            },
+            "t_mapping(t_uint256,t_struct(Expense)33_storage)": {
+              "label": "mapping(uint256 => struct ExpenseShare.Expense)",
+              "numberOfBytes": "32"
+            },
+            "t_mapping(t_uint256,t_struct(Group)17_storage)": {
+              "label": "mapping(uint256 => struct ExpenseShare.Group)",
+              "numberOfBytes": "32"
+            },
+            "t_string_storage": {
+              "label": "string",
+              "numberOfBytes": "32"
+            },
+            "t_struct(Expense)33_storage": {
+              "label": "struct ExpenseShare.Expense",
+              "members": [
+                {
+                  "label": "id",
+                  "type": "t_uint256",
+                  "offset": 0,
+                  "slot": "0"
+                },
+                {
+                  "label": "groupId",
+                  "type": "t_uint256",
+                  "offset": 0,
+                  "slot": "1"
+                },
+                {
+                  "label": "payer",
+                  "type": "t_address",
+                  "offset": 0,
+                  "slot": "2"
+                },
+                {
+                  "label": "amount",
+                  "type": "t_uint256",
+                  "offset": 0,
+                  "slot": "3"
+                },
+                {
+                  "label": "description",
+                  "type": "t_string_storage",
+                  "offset": 0,
+                  "slot": "4"
+                },
+                {
+                  "label": "participants",
+                  "type": "t_array(t_address)dyn_storage",
+                  "offset": 0,
+                  "slot": "5"
+                },
+                {
+                  "label": "isSettled",
+                  "type": "t_bool",
+                  "offset": 0,
+                  "slot": "6"
+                }
+              ],
+              "numberOfBytes": "224"
+            },
+            "t_struct(Group)17_storage": {
+              "label": "struct ExpenseShare.Group",
+              "members": [
+                {
+                  "label": "id",
+                  "type": "t_uint256",
+                  "offset": 0,
+                  "slot": "0"
+                },
+                {
+                  "label": "name",
+                  "type": "t_string_storage",
+                  "offset": 0,
+                  "slot": "1"
+                },
+                {
+                  "label": "members",
+                  "type": "t_array(t_address)dyn_storage",
+                  "offset": 0,
+                  "slot": "2"
+                },
+                {
+                  "label": "isActive",
+                  "type": "t_bool",
+                  "offset": 0,
+                  "slot": "3"
+                }
+              ],
+              "numberOfBytes": "128"
+            },
+            "t_uint256": {
+              "label": "uint256",
+              "numberOfBytes": "32"
+            }
+          },
+          "layoutVersion": "1.2",
+          "flat": true,
+          "namespaces": {}
+        },
+        "solcVersion": "0.8.26"
+      }
+    },
+    {
+      "contracts/ExpenseShare.sol:ExpenseShare": {
+        "src": "contracts\\ExpenseShare.sol:4",
+        "version": {
+          "withMetadata": "ee1954364c6cb30d3284f897567396b60fabd5334a7cd61e33f407bee4705309",
+          "withoutMetadata": "091e50f8dcf0a9554e6807e4be759f77e290b3ecb32b271543a7b7caaf904aed",
+          "linkedWithoutMetadata": "091e50f8dcf0a9554e6807e4be759f77e290b3ecb32b271543a7b7caaf904aed"
+        },
+        "inherit": [],
+        "libraries": [],
+        "methods": [
+          "createExpense(uint256,string,address[])"
+        ],
+        "linkReferences": [],
+        "errors": [
+          {
+            "kind": "state-variable-assignment",
+            "name": "expenseCount",
+            "src": "contracts\\ExpenseShare.sol:6"
+          },
+          {
+            "kind": "state-variable-assignment",
+            "name": "groupCount",
+            "src": "contracts\\ExpenseShare.sol:7"
+          }
+        ],
+        "layout": {
+          "storage": [
+            {
+              "label": "expenseCount",
+              "offset": 0,
+              "slot": "0",
+              "type": "t_uint256",
+              "contract": "ExpenseShare",
+              "src": "contracts\\ExpenseShare.sol:6"
+            },
+            {
+              "label": "groupCount",
+              "offset": 0,
+              "slot": "1",
+              "type": "t_uint256",
+              "contract": "ExpenseShare",
+              "src": "contracts\\ExpenseShare.sol:7"
+            },
+            {
+              "label": "expenses",
+              "offset": 0,
+              "slot": "2",
+              "type": "t_mapping(t_uint256,t_struct(Expense)21_storage)",
+              "contract": "ExpenseShare",
+              "src": "contracts\\ExpenseShare.sol:18"
+            }
+          ],
+          "types": {
+            "t_address": {
+              "label": "address",
+              "numberOfBytes": "20"
+            },
+            "t_array(t_address)dyn_storage": {
+              "label": "address[]",
+              "numberOfBytes": "32"
+            },
+            "t_bool": {
+              "label": "bool",
+              "numberOfBytes": "1"
+            },
+            "t_mapping(t_uint256,t_struct(Expense)21_storage)": {
+              "label": "mapping(uint256 => struct ExpenseShare.Expense)",
+              "numberOfBytes": "32"
+            },
+            "t_string_storage": {
+              "label": "string",
+              "numberOfBytes": "32"
+            },
+            "t_struct(Expense)21_storage": {
+              "label": "struct ExpenseShare.Expense",
+              "members": [
+                {
+                  "label": "id",
+                  "type": "t_uint256",
+                  "offset": 0,
+                  "slot": "0"
+                },
+                {
+                  "label": "payer",
+                  "type": "t_address",
+                  "offset": 0,
+                  "slot": "1"
+                },
+                {
+                  "label": "amount",
+                  "type": "t_uint256",
+                  "offset": 0,
+                  "slot": "2"
+                },
+                {
+                  "label": "description",
+                  "type": "t_string_storage",
+                  "offset": 0,
+                  "slot": "3"
+                },
+                {
+                  "label": "participants",
+                  "type": "t_array(t_address)dyn_storage",
+                  "offset": 0,
+                  "slot": "4"
+                },
+                {
+                  "label": "isSettled",
+                  "type": "t_bool",
+                  "offset": 0,
+                  "slot": "5"
+                }
+              ],
+              "numberOfBytes": "192"
+            },
+            "t_uint256": {
+              "label": "uint256",
+              "numberOfBytes": "32"
+            }
+          },
+          "layoutVersion": "1.2",
+          "flat": true,
+          "namespaces": {}
+        },
+        "solcVersion": "0.8.26"
+      }
+    }
+  ]
+}
