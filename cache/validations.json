@@ -1,0 +1,133 @@
+{
+  "version": "3.4",
+  "log": [
+    {
+      "contracts/ExpenseShare.sol:ExpenseShare": {
+        "src": "contracts\\ExpenseShare.sol:4",
+        "version": {
+          "withMetadata": "ee1954364c6cb30d3284f897567396b60fabd5334a7cd61e33f407bee4705309",
+          "withoutMetadata": "091e50f8dcf0a9554e6807e4be759f77e290b3ecb32b271543a7b7caaf904aed",
+          "linkedWithoutMetadata": "091e50f8dcf0a9554e6807e4be759f77e290b3ecb32b271543a7b7caaf904aed"
+        },
+        "inherit": [],
+        "libraries": [],
+        "methods": [
+          "createExpense(uint256,string,address[])"
+        ],
+        "linkReferences": [],
+        "errors": [
+          {
+            "kind": "state-variable-assignment",
+            "name": "expenseCount",
+            "src": "contracts\\ExpenseShare.sol:6"
+          },
+          {
+            "kind": "state-variable-assignment",
+            "name": "groupCount",
+            "src": "contracts\\ExpenseShare.sol:7"
+          }
+        ],
+        "layout": {
+          "storage": [
+            {
+              "label": "expenseCount",
+              "offset": 0,
+              "slot": "0",
+              "type": "t_uint256",
+              "contract": "ExpenseShare",
+              "src": "contracts\\ExpenseShare.sol:6"
+            },
+            {
+              "label": "groupCount",
+              "offset": 0,
+              "slot": "1",
+              "type": "t_uint256",
+              "contract": "ExpenseShare",
+              "src": "contracts\\ExpenseShare.sol:7"
+            },
+            {
+              "label": "expenses",
+              "offset": 0,
+              "slot": "2",
+              "type": "t_mapping(t_uint256,t_struct(Expense)21_storage)",
+              "contract": "ExpenseShare",
+              "src": "contracts\\ExpenseShare.sol:18"
+            }
+          ],
+          "types": {
+            "t_address": {
+              "label": "address",
+              "numberOfBytes": "20"
+            },
+            "t_array(t_address)dyn_storage": {
+              "label": "address[]",
+              "numberOfBytes": "32"
+            },
+            "t_bool": {
+              "label": "bool",
+              "numberOfBytes": "1"
+            },
+            "t_mapping(t_uint256,t_struct(Expense)21_storage)": {
+              "label": "mapping(uint256 => struct ExpenseShare.Expense)",
+              "numberOfBytes": "32"
+            },
+            "t_string_storage": {
+              "label": "string",
+              "numberOfBytes": "32"
+            },
+            "t_struct(Expense)21_storage": {
+              "label": "struct ExpenseShare.Expense",
+              "members": [
+                {
+                  "label": "id",
+                  "type": "t_uint256",
+                  "offset": 0,
+                  "slot": "0"
+                },
+                {
+                  "label": "payer",
+                  "type": "t_address",
+                  "offset": 0,
+                  "slot": "1"
+                },
+                {
+                  "label": "amount",
+                  "type": "t_uint256",
+                  "offset": 0,
+                  "slot": "2"
+                },
+                {
+                  "label": "description",
+                  "type": "t_string_storage",
+                  "offset": 0,
+                  "slot": "3"
+                },
+                {
+                  "label": "participants",
+                  "type": "t_array(t_address)dyn_storage",
+                  "offset": 0,
+                  "slot": "4"
+                },
+                {
+                  "label": "isSettled",
+                  "type": "t_bool",
+                  "offset": 0,
+                  "slot": "5"
+                }
+              ],
+              "numberOfBytes": "192"
+            },
+            "t_uint256": {
+              "label": "uint256",
+              "numberOfBytes": "32"
+            }
+          },
+          "layoutVersion": "1.2",
+          "flat": true,
+          "namespaces": {}
+        },
+        "solcVersion": "0.8.26"
+      }
+    }
+  ]
+}
