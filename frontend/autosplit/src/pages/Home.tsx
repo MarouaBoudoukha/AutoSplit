@@ -26,7 +26,7 @@ const Home: React.FC = () => {
         onClick={handleGetStarted}
         className="px-6 py-3 bg-white text-blue-600 font-semibold rounded-full shadow-lg hover:bg-gray-200"
       >
-        Get Started
+        Connect with your email
       </button>
     </div>
   );

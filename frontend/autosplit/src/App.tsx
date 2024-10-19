@@ -2,6 +2,9 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Home from './pages/Home';
+import Dashboard from './pages/Dashboard';
+import Group from './pages/Group';
+import CreateGroup from './pages/CreateGroup';
 import Navbar from './components/Navbar/Navbar';
 
 import { ToastContainer } from 'react-toastify';
@@ -14,6 +17,9 @@ function App() {
         <Navbar />
         <Routes>
           <Route path="/" element={<Home />} />
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/group/:id" element={<Group/>} />
+          <Route path="/create-group" element={<CreateGroup />} />
         </Routes>
         <ToastContainer />
       </div>
