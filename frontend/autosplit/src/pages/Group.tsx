@@ -5,6 +5,8 @@ import Expenses from '../components/GroupSections/Expenses';
 import Balances from '../components/GroupSections/Balances';
 import Users from '../components/GroupSections/Users';
 import { useGlobalContext } from '../context/GlobalState';
+import { createGroup, addMemberToGroup, createExpense} from '../utils/getExpenses.mjs';
+
 
 type Section = 'Expenses' | 'Balances' | 'Users';
 
@@ -63,7 +65,7 @@ const Group: React.FC = () => {
           {(['Expenses', 'Balances', 'Users'] as Section[]).map(section => (
             <button
               key={section}
-              onClick={() => setActiveSection(section)}
+              onClick={() => createGroup()}
               className={`whitespace-nowrap pb-4 px-1 border-b-2 font-medium text-sm ${
                 activeSection === section
                   ? 'border-blue-500 text-blue-600'
