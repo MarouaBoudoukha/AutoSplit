@@ -5,7 +5,7 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
-const contractAddress = "0xCb2C120dB655AA50Db3C7156F51d413B1B3da5fB";
+const contractAddress = "0x0039bcf3e71149285BE372003De5ec1460cfc2fD";
 
 // Initialize the provider
 const provider = new ethers.JsonRpcProvider(
@@ -626,22 +626,61 @@ export function displayDebtSummary(debtSummary, participants) {
 	});
 }
 
+// const contract = new ethers.Contract(contractAddress, contractABI, wallet);
+
 /**
- * Main function to demonstrate debt management functionalities
+ * Fonction pour rembourser une dette à un créditeur
+ * @param {string} creditorAddress - Adresse du créditeur
+ * @param {string} amountEther - Montant à rembourser en ETH (comme string)
+ * @returns {Promise<void>}
+ */
+export async function repayDebt(creditorAddress, amountEther) {
+	try {
+		const amountWei = ethers.parseEther(amountEther);
+
+		const tx = await contract.repayDebt(creditorAddress, amountWei, {
+			value: amountWei,
+		});
+		console.log(`Transaction envoyée. Hash: ${tx.hash}`);
+		await tx.wait();
+		console.log("Remboursement effectué avec succès.");
+
+		// Vérifier la dette après remboursement
+		const debt = await contract.getDebtBetween(
+			wallet.address,
+			creditorAddress
+		);
+		console.log(
+			`Dette restante envers ${creditorAddress}: ${formatEther(debt)} ETH`
+		);
+	} catch (error) {
+		console.error("Erreur lors du remboursement de la dette :", error);
+	}
+}
+
+/**
+ * Fonction principale pour démontrer le remboursement de dettes
  */
 export async function main() {
-	// Example participants (replace these addresses with real addresses)
-	const participants = [
-		"0xe51d038E5423C626f44E3730F34b792bDcAADD69",
-		"0xfEbc40e5FE30f897813F6d85a3e292B1c35aa886",
-		"0x79edB24F41Ec139dde29B6e604ed52954d643858",
-	];
+	// Exemple de participants (remplacez par des adresses réelles)
+	const debtor = wallet.address;
+	const creditor = "0x8503d935eA859dF168625a7326f5FFC2c5807Dec";
+	const amountToRepay = "0.01";
 
-	console.log("Retrieving and displaying the debt summary...\n");
+	console.log(`Dette initiale envers ${creditor}:`);
 
-	// Summarize debts
-	const debtSummary = await summarizeDebts(participants);
-	displayDebtSummary(debtSummary, participants);
+	// Vérifier la dette initiale
+	const initialDebt = await getIndividualDebt(debtor, creditor);
+	console.log(formatEther(initialDebt), "ETH");
+
+	// Effectuer le remboursement
+	await repayDebt(creditor, amountToRepay);
+
+	// Vérifier la dette après remboursement
+	const finalDebt = await getIndividualDebt(debtor, creditor);
+	console.log(
+		`Dette finale envers ${creditor}: ${formatEther(finalDebt)} ETH`
+	);
 }
 
 // Conditional execution of the main script

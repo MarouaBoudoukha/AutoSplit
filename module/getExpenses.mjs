@@ -17,7 +17,7 @@ dotenv.config();
 // 	process.exit(1);
 // }
 
-const contractAddress = "0x98722B0CaD34c5f205921f503B90F6D04959D414";
+const contractAddress = "0x0039bcf3e71149285BE372003De5ec1460cfc2fD";
 
 // Initialize the provider
 const provider = new ethers.JsonRpcProvider(
@@ -31,6 +31,31 @@ const wallet = new ethers.Wallet(privateKey, provider);
 
 // ABI of the SharedExpenses contract
 const contractABI = [
+	{
+		anonymous: false,
+		inputs: [
+			{
+				indexed: true,
+				internalType: "address",
+				name: "debtor",
+				type: "address",
+			},
+			{
+				indexed: true,
+				internalType: "address",
+				name: "creditor",
+				type: "address",
+			},
+			{
+				indexed: false,
+				internalType: "uint256",
+				name: "amount",
+				type: "uint256",
+			},
+		],
+		name: "DebtRepaid",
+		type: "event",
+	},
 	{
 		anonymous: false,
 		inputs: [
@@ -207,6 +232,30 @@ const contractABI = [
 		type: "function",
 	},
 	{
+		inputs: [
+			{
+				internalType: "address",
+				name: "",
+				type: "address",
+			},
+			{
+				internalType: "address",
+				name: "",
+				type: "address",
+			},
+		],
+		name: "debts",
+		outputs: [
+			{
+				internalType: "uint256",
+				name: "",
+				type: "uint256",
+			},
+		],
+		stateMutability: "view",
+		type: "function",
+	},
+	{
 		inputs: [],
 		name: "expenseCount",
 		outputs: [
@@ -266,6 +315,30 @@ const contractABI = [
 	{
 		inputs: [
 			{
+				internalType: "address",
+				name: "_debtor",
+				type: "address",
+			},
+			{
+				internalType: "address",
+				name: "_creditor",
+				type: "address",
+			},
+		],
+		name: "getDebtBetween",
+		outputs: [
+			{
+				internalType: "uint256",
+				name: "",
+				type: "uint256",
+			},
+		],
+		stateMutability: "view",
+		type: "function",
+	},
+	{
+		inputs: [
+			{
 				internalType: "uint256",
 				name: "_expenseId",
 				type: "uint256",
@@ -276,6 +349,11 @@ const contractABI = [
 			{
 				internalType: "uint256",
 				name: "id",
+				type: "uint256",
+			},
+			{
+				internalType: "uint256",
+				name: "groupId",
 				type: "uint256",
 			},
 			{
@@ -297,11 +375,6 @@ const contractABI = [
 				internalType: "address[]",
 				name: "participants",
 				type: "address[]",
-			},
-			{
-				internalType: "uint256",
-				name: "groupId",
-				type: "uint256",
 			},
 			{
 				internalType: "bool",
@@ -434,6 +507,24 @@ const contractABI = [
 			},
 		],
 		stateMutability: "view",
+		type: "function",
+	},
+	{
+		inputs: [
+			{
+				internalType: "address",
+				name: "_creditor",
+				type: "address",
+			},
+			{
+				internalType: "uint256",
+				name: "_amount",
+				type: "uint256",
+			},
+		],
+		name: "repayDebt",
+		outputs: [],
+		stateMutability: "payable",
 		type: "function",
 	},
 	{
@@ -736,7 +827,7 @@ async function main() {
 		const groupName = "Friends Group";
 		const groupMembers = [
 			"0xfEbc40e5FE30f897813F6d85a3e292B1c35aa886",
-			"0x79edB24F41Ec139dde29B6e604ed52954d643858",
+			"0x538cFD76c4B97C5a87E1d5Eb2C7d026D08d34a81",
 			wallet.address, // Ajouter l'adresse du portefeuille comme membre
 		];
 
@@ -754,7 +845,7 @@ async function main() {
 		const description = "Lunch";
 		const participants = [
 			"0xfEbc40e5FE30f897813F6d85a3e292B1c35aa886",
-			"0x79edB24F41Ec139dde29B6e604ed52954d643858",
+			"0x538cFD76c4B97C5a87E1d5Eb2C7d026D08d34a81",
 			newMember,
 		];
 		// Définir les parts correspondant aux participants (en Ether)

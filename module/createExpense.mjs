@@ -13,7 +13,7 @@ if (!ethers) {
 }
 
 // Deployed contract address
-const contractAddress = "0x98722B0CaD34c5f205921f503B90F6D04959D414";
+const contractAddress = "0xCb2C120dB655AA50Db3C7156F51d413B1B3da5fB";
 
 // Updated Contract ABI (ensure it matches the deployed contract)
 const contractABI = [
