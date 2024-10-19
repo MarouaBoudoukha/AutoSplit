@@ -11,7 +11,7 @@ dotenv.config();
 
 const privateKey = process.env.PRIVATE_KEY;
 
-// Fonction pour envoyer une notification via XMTP
+// Function to send a notification via XMTP
 export async function sendXMTPNotification(
 	xmtpClient,
 	recipientAddress,
@@ -24,27 +24,27 @@ export async function sendXMTPNotification(
 				recipientAddress
 			);
 			await conversation.send(messageContent);
-			console.log(`Notification envoyée à ${recipientAddress}`);
+			console.log(`Notification sent to ${recipientAddress}`);
 		} else {
 			console.log(
-				`Le destinataire ${recipientAddress} n'est pas sur le réseau XMTP`
+				`The recipient ${recipientAddress} is not on the XMTP network`
 			);
 		}
 	} catch (error) {
 		console.error(
-			`Erreur lors de l'envoi du message à ${recipientAddress}:`,
+			`Error while sending the message to ${recipientAddress}:`,
 			error
 		);
 	}
 }
 
-// Fonction pour initialiser le client XMTP
+// Function to initialize the XMTP client
 export async function initializeXMTPClient() {
-	// Initialiser le portefeuille ethers avec la clé privée
+	// Initialize the ethers wallet with the private key
 	const wallet = new ethers.Wallet(privateKey);
 
-	// Initialiser le client XMTP
-	const xmtp = await Client.create(wallet, { env: "dev" }); // Utilisez 'production' si vous êtes en production
+	// Initialize the XMTP client
+	const xmtp = await Client.create(wallet, { env: "dev" }); // Use 'production' if you are in production
 
 	return xmtp;
 }
