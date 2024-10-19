@@ -30,6 +30,9 @@ contract ExpenseShare {
     mapping(uint256 => Expense) public expenses;
     mapping(uint256 => uint256[]) public groupExpenses; // Maps groupId to an array of expenseIds
 
+    // Gestion des dettes
+    mapping(address => mapping(address => uint256)) public debts; // debtor => creditor => amount
+
     // Events
     event GroupCreated(
         uint256 id,
@@ -54,6 +57,12 @@ contract ExpenseShare {
     event ExpenseSettled(
         uint256 indexed expenseId,
         address indexed payer
+    );
+
+    event DebtRepaid(
+        address indexed debtor,
+        address indexed creditor,
+        uint256 amount
     );
 
     /**
@@ -123,6 +132,15 @@ contract ExpenseShare {
         expense.shares = _shares;
         expense.isSettled = false;
 
+        // Gestion des dettes
+        for (uint256 i = 0; i < _participants.length; i++) {
+            address participant = _participants[i];
+            uint256 share = _shares[i];
+            if (participant != msg.sender) {
+                debts[participant][msg.sender] += share;
+            }
+        }
+
         // Associate the expense with the group
         groupExpenses[_groupId].push(expenseCount);
         groups[_groupId].expenseIds.push(expenseCount);
@@ -130,24 +148,34 @@ contract ExpenseShare {
         emit ExpenseCreated(expense.id, _groupId, msg.sender, _amount, _description, _participants);
     }
 
-    
+    /**
+     * @dev Retrieves the details of a specific expense.
+     * @param _expenseId The ID of the expense.
+     * @return id The expense ID.
+     * @return groupId The group ID.
+     * @return payer The address of the payer.
+     * @return amount The total amount of the expense.
+     * @return description The description of the expense.
+     * @return participants The list of participants.
+     * @return isSettled Whether the expense is settled.
+     */
     function getExpense(uint256 _expenseId) public view returns (
         uint256 id,
+        uint256 groupId,
         address payer,
         uint256 amount,
         string memory description,
         address[] memory participants,
-        uint256 groupId,
         bool isSettled
     ) {
         Expense storage expense = expenses[_expenseId];
         return (
             expense.id,
+            expense.groupId,
             expense.payer,
             expense.amount,
             expense.description,
             expense.participants,
-            expense.groupId,
             expense.isSettled
         );
     }
@@ -183,26 +211,55 @@ contract ExpenseShare {
     }
 
     /**
- * @dev Retrieves the details of a group by its ID.
- * @param _groupId The ID of the group.
- * @return id The group ID.
- * @return name The name of the group.
- * @return members An array of member addresses.
- * @return expenseIds An array of expense IDs associated with the group.
- */
-function getGroup(uint256 _groupId) public view returns (
-    uint256 id,
-    string memory name,
-    address[] memory members,
-    uint256[] memory expenseIds
-) {
-    Group storage group = groups[_groupId];
-    return (
-        group.id,
-        group.name,
-        group.members,
-        group.expenseIds
-    );
-}
+     * @dev Retrieves the details of a group by its ID.
+     * @param _groupId The ID of the group.
+     * @return id The group ID.
+     * @return name The name of the group.
+     * @return members An array of member addresses.
+     * @return expenseIds An array of expense IDs associated with the group.
+     */
+    function getGroup(uint256 _groupId) public view returns (
+        uint256 id,
+        string memory name,
+        address[] memory members,
+        uint256[] memory expenseIds
+    ) {
+        Group storage group = groups[_groupId];
+        return (
+            group.id,
+            group.name,
+            group.members,
+            group.expenseIds
+        );
+    }
 
+    /**
+     * @dev Retrieves the debt between two users.
+     * @param _debtor The address of the debtor.
+     * @param _creditor The address of the creditor.
+     * @return The amount of debt.
+     */
+    function getDebtBetween(address _debtor, address _creditor) public view returns (uint256) {
+        return debts[_debtor][_creditor];
+    }
+
+    /**
+     * @dev Repays a debt to a creditor.
+     * @param _creditor The address of the creditor.
+     * @param _amount The amount to repay.
+     */
+    function repayDebt(address _creditor, uint256 _amount) public payable {
+        require(_creditor != address(0), "Invalid creditor address");
+        require(_amount > 0, "Amount must be greater than zero");
+        require(debts[msg.sender][_creditor] >= _amount, "Amount exceeds debt");
+
+        require(msg.value == _amount, "Sent amount does not match amount to repay");
+
+        debts[msg.sender][_creditor] -= _amount;
+
+        (bool success, ) = _creditor.call{value: _amount}("");
+        require(success, "Transfer to creditor failed");
+
+        emit DebtRepaid(msg.sender, _creditor, _amount);
+    }
 }
