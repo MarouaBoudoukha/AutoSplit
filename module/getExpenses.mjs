@@ -543,75 +543,73 @@ const contractABI = [
 ];
 
 // Initialize the contract
+// Initialize the contract
 const contract = new ethers.Contract(contractAddress, contractABI, wallet);
 
 /**
- * Crée un nouveau groupe.
- * @param {string} name - Nom du groupe.
- * @param {string[]} members - Tableau des adresses des membres.
- * @returns {Promise<number>} - ID du groupe créé.
+ * Creates a new group.
+ * @param {string} name - Name of the group.
+ * @param {string[]} members - Array of member addresses.
+ * @returns {Promise<number>} - ID of the created group.
  */
 async function createGroup(name, members) {
 	try {
 		const tx = await contract.createGroup(name, members);
-		console.log(
-			"Transaction de création de groupe envoyée. Hash :",
-			tx.hash
-		);
+		console.log("Group creation transaction sent. Hash:", tx.hash);
 
 		const receipt = await tx.wait();
-		console.log("Groupe créé dans le bloc :", receipt.blockNumber);
+		console.log("Group created in block:", receipt.blockNumber);
 
-		// Extraire l'événement GroupCreated
+		// Extract the GroupCreated event
 		let groupId = null;
 		for (const log of receipt.logs) {
 			try {
 				const parsedLog = contract.interface.parseLog(log);
 				if (parsedLog.name === "GroupCreated") {
 					groupId = Number(parsedLog.args.id);
-					console.log(`ID du groupe créé : ${groupId}`);
+					console.log(`Created group ID: ${groupId}`);
 					break;
 				}
 			} catch (e) {
-				// Ignorer les logs qui ne proviennent pas de notre contrat
+				// Ignore logs that are not from our contract
 			}
 		}
 
 		if (groupId === null) {
-			throw new Error("Événement GroupCreated non trouvé");
+			throw new Error("GroupCreated event not found");
 		}
 
 		return groupId;
 	} catch (error) {
-		console.error("Erreur lors de la création du groupe :", error);
+		console.error("Error during group creation:", error);
 	}
 }
 
 /**
- * Ajoute un nouveau membre à un groupe existant.
- * @param {number} groupId - ID du groupe.
- * @param {string} newMember - Adresse du nouveau membre.
+ * Adds a new member to an existing group.
+ * @param {number} groupId - Group ID.
+ * @param {string} newMember - Address of the new member.
  */
 async function addMemberToGroup(groupId, newMember) {
 	try {
 		const tx = await contract.addMemberToGroup(groupId, newMember);
-		console.log("Transaction d'ajout de membre envoyée. Hash :", tx.hash);
+		console.log("Member addition transaction sent. Hash:", tx.hash);
 
 		const receipt = await tx.wait();
-		console.log("Membre ajouté dans le bloc :", receipt.blockNumber);
+		console.log("Member added in block:", receipt.blockNumber);
 	} catch (error) {
-		console.error("Erreur lors de l'ajout du membre :", error);
+		console.error("Error while adding the member:", error);
 	}
 }
 
 /**
- * Crée une nouvelle dépense associée à un groupe spécifique.
- * @param {number} groupId - ID du groupe.
- * @param {string} amountEther - Montant en Ether (ex. "1.5").
- * @param {string} description - Description de la dépense.
- * @param {string[]} participants - Tableau des adresses des participants.
- * @param {string[]} sharesEther - Tableau des parts en Ether correspondant aux participants.
- * @returns {Promise<number>} - ID de la dépense créée.
+ * Creates a new expense associated with a specific group.
+ * @param {number} groupId - Group ID.
+ * @param {string} amountEther - Amount in Ether (e.g., "1.5").
+ * @param {string} description - Description of the expense.
+ * @param {string[]} participants - Array of participant addresses.
+ * @param {string[]} sharesEther - Array of shares in Ether corresponding to participants.
+ * @returns {Promise<number>} - ID of the created expense.
  */
 async function createExpense(
 	groupId,
@@ -632,7 +630,7 @@ async function createExpense(
 
 		if (totalShares !== amount) {
 			throw new Error(
-				"La somme des parts n'est pas égale au montant total"
+				"The sum of the shares is not equal to the total amount"
 			);
 		}
 
@@ -646,13 +644,10 @@ async function createExpense(
 			shares,
 			groupIdBigInt
 		);
-		console.log(
-			"Transaction de création de dépense envoyée. Hash :",
-			tx.hash
-		);
+		console.log("Expense creation transaction sent. Hash:", tx.hash);
 
 		const receipt = await tx.wait();
-		console.log("Dépense créée dans le bloc :", receipt.blockNumber);
+		console.log("Expense created in block:", receipt.blockNumber);
 
 		// Extract the ExpenseCreated event
 		let expenseId = null;
@@ -661,7 +656,7 @@ async function createExpense(
 				const parsedLog = contract.interface.parseLog(log);
 				if (parsedLog.name === "ExpenseCreated") {
 					expenseId = Number(parsedLog.args.id);
-					console.log(`ID de la dépense créée : ${expenseId}`);
+					console.log(`Created expense ID: ${expenseId}`);
 					break;
 				}
 			} catch (e) {
@@ -670,19 +665,19 @@ async function createExpense(
 		}
 
 		if (expenseId === null) {
-			throw new Error("Événement ExpenseCreated non trouvé");
+			throw new Error("ExpenseCreated event not found");
 		}
 
 		return expenseId;
 	} catch (error) {
-		console.error("Erreur lors de la création de la dépense :", error);
+		console.error("Error during expense creation:", error);
 	}
 }
 
 /**
- * Récupère les détails d'une dépense par son ID.
- * @param {number} expenseId - ID de la dépense.
- * @returns {Promise<Object>} - Détails de la dépense.
+ * Retrieves the details of an expense by its ID.
+ * @param {number} expenseId - Expense ID.
+ * @returns {Promise<Object>} - Details of the expense.
  */
 async function getExpense(expenseId) {
 	try {
@@ -696,103 +691,94 @@ async function getExpense(expenseId) {
 			participants: expense.participants,
 			isSettled: expense.isSettled,
 		};
-		console.log(`Détails de la dépense ${expenseId} :`, formattedExpense);
+		console.log(`Details of expense ${expenseId}:`, formattedExpense);
 		return formattedExpense;
 	} catch (error) {
 		console.error(
-			`Erreur lors de la récupération de la dépense ${expenseId} :`,
+			`Error while retrieving the expense ${expenseId}:`,
 			error
 		);
 	}
 }
 
 /**
- * Récupère la part d'un utilisateur dans une dépense spécifique.
- * @param {number} expenseId - ID de la dépense.
- * @param {string} userAddress - Adresse de l'utilisateur.
- * @returns {Promise<string>} - Montant de la part en Ether.
+ * Retrieves the share of a user in a specific expense.
+ * @param {number} expenseId - Expense ID.
+ * @param {string} userAddress - User's address.
+ * @returns {Promise<string>} - User's share amount in Ether.
  */
 async function getUserShare(expenseId, userAddress) {
 	try {
 		const share = await contract.getUserShare(expenseId, userAddress);
 		const shareEther = ethers.formatEther(share);
 		console.log(
-			`Part de l'utilisateur ${userAddress} dans la dépense ${expenseId} : ${shareEther} ETH`
+			`User's share ${userAddress} in expense ${expenseId}: ${shareEther} ETH`
 		);
 		return shareEther;
 	} catch (error) {
 		console.error(
-			`Erreur lors de la récupération de la part de l'utilisateur dans la dépense ${expenseId} :`,
+			`Error while retrieving the user's share in expense ${expenseId}:`,
 			error
 		);
 	}
 }
 
 /**
- * Récupère le nombre total de groupes.
- * @returns {Promise<number>} - Nombre total de groupes.
+ * Retrieves the total number of groups.
+ * @returns {Promise<number>} - Total number of groups.
  */
 async function getTotalGroups() {
 	try {
 		const count = await contract.groupCount();
 		const total = Number(count);
-		console.log(`Nombre total de groupes : ${total}`);
+		console.log(`Total number of groups: ${total}`);
 		return total;
 	} catch (error) {
-		console.error("Erreur lors de la récupération de groupCount :", error);
+		console.error("Error while retrieving groupCount:", error);
 	}
 }
 
 /**
- * Récupère le nombre total de dépenses.
- * @returns {Promise<number>} - Nombre total de dépenses.
+ * Retrieves the total number of expenses.
+ * @returns {Promise<number>} - Total number of expenses.
  */
 async function getTotalExpenses() {
 	try {
 		const count = await contract.expenseCount();
 		const total = Number(count);
-		console.log(`Nombre total de dépenses : ${total}`);
+		console.log(`Total number of expenses: ${total}`);
 		return total;
 	} catch (error) {
-		console.error(
-			"Erreur lors de la récupération de expenseCount :",
-			error
-		);
+		console.error("Error while retrieving expenseCount:", error);
 	}
 }
 
 /**
- * Régler une dépense en remboursant la part de l'utilisateur.
- * @param {number} expenseId - ID de la dépense à régler.
+ * Settles an expense by paying the user's share.
+ * @param {number} expenseId - ID of the expense to settle.
  */
 async function settleExpense(expenseId) {
 	try {
-		// Récupérer la part de l'utilisateur pour cette dépense
+		// Retrieve the user's share for this expense
 		const share = await contract.getUserShare(expenseId, wallet.address);
 		const amountToPay = share;
 
 		const tx = await contract.settleExpense(expenseId, {
 			value: amountToPay,
 		});
-		console.log(
-			"Transaction de règlement de dépense envoyée. Hash :",
-			tx.hash
-		);
+		console.log("Expense settlement transaction sent. Hash:", tx.hash);
 
 		const receipt = await tx.wait();
-		console.log("Dépense réglée dans le bloc :", receipt.blockNumber);
+		console.log("Expense settled in block:", receipt.blockNumber);
 	} catch (error) {
-		console.error(
-			`Erreur lors du règlement de la dépense ${expenseId} :`,
-			error
-		);
+		console.error(`Error while settling expense ${expenseId}:`, error);
 	}
 }
 
 /**
- * Récupère toutes les dépenses associées à un groupe.
- * @param {number} groupId - ID du groupe.
- * @returns {Promise<Object[]>} - Tableau des détails des dépenses.
+ * Retrieves all expenses associated with a group.
+ * @param {number} groupId - Group ID.
+ * @returns {Promise<Object[]>} - Array of expense details.
  */
 async function getGroupExpenses(groupId) {
 	try {
@@ -805,42 +791,42 @@ async function getGroupExpenses(groupId) {
 			expenses.push(expense);
 		}
 
-		console.log(`Dépenses pour le groupe ${groupId} :`, expenses);
+		console.log(`Expenses for group ${groupId}:`, expenses);
 		return expenses;
 	} catch (error) {
 		console.error(
-			`Erreur lors de la récupération des dépenses pour le groupe ${groupId} :`,
+			`Error while retrieving expenses for group ${groupId}:`,
 			error
 		);
 	}
 }
 
 /**
- * Fonction principale pour exécuter le script.
+ * Main function to run the script.
  */
 async function main() {
 	try {
-		// Récupérer le nombre total de groupes
+		// Retrieve the total number of groups
 		await getTotalGroups();
 
-		// Créer un nouveau groupe
+		// Create a new group
 		const groupName = "Friends Group";
 		const groupMembers = [
 			"0xfEbc40e5FE30f897813F6d85a3e292B1c35aa886",
 			"0x538cFD76c4B97C5a87E1d5Eb2C7d026D08d34a81",
-			wallet.address, // Ajouter l'adresse du portefeuille comme membre
+			wallet.address, // Add the wallet address as a member
 		];
 
 		const groupId = await createGroup(groupName, groupMembers);
 
-		// Récupérer le nombre total de groupes après création
+		// Retrieve the total number of groups after creation
 		await getTotalGroups();
 
-		// Ajouter un nouveau membre au groupe
+		// Add a new member to the group
 		const newMember = "0x1234567890abcdef1234567890abcdef12345678";
 		await addMemberToGroup(groupId, newMember);
 
-		// Créer une nouvelle dépense dans le groupe
+		// Create a new expense in the group
 		const amount = "0.5"; // 0.5 Ether
 		const description = "Lunch";
 		const participants = [
@@ -848,12 +834,12 @@ async function main() {
 			"0x538cFD76c4B97C5a87E1d5Eb2C7d026D08d34a81",
 			newMember,
 		];
-		// Définir les parts correspondant aux participants (en Ether)
+		// Define the shares corresponding to participants (in Ether)
 		const shares = [
 			"0.166666666666666666",
 			"0.166666666666666667",
 			"0.166666666666666667",
-		]; // Somme = 0.5 ETH exactement
+		]; // Total = 0.5 ETH exactly
 
 		const expenseId = await createExpense(
 			groupId,
@@ -864,29 +850,29 @@ async function main() {
 		);
 
 		if (expenseId !== null) {
-			// Récupérer les détails de la dépense
+			// Retrieve the expense details
 			await getExpense(expenseId);
 
-			// Récupérer le nombre total de dépenses
+			// Retrieve the total number of expenses
 			await getTotalExpenses();
 
-			// Régler la dépense
+			// Settle the expense
 			await settleExpense(expenseId);
 
-			// Récupérer les détails de la dépense après règlement
+			// Retrieve the expense details after settlement
 			await getExpense(expenseId);
 
-			// Récupérer les dépenses du groupe
+			// Retrieve the group’s expenses
 			await getGroupExpenses(groupId);
 		} else {
 			console.error(
-				"La dépense n'a pas été créée. Vérifiez les logs précédents."
+				"The expense was not created. Check the previous logs."
 			);
 		}
 	} catch (error) {
-		console.error("Erreur dans la fonction principale :", error);
+		console.error("Error in the main function:", error);
 	}
 }
 
-// Exécuter la fonction principale
+// Execute the main function
 main();
