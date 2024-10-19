@@ -1,5 +1,7 @@
 // src/context/GlobalState.tsx
 import React, { createContext, useState, useEffect, useContext } from 'react';
+import { ethers } from 'ethers';
+import { contractAddress, contractABI } from '../utils/contractConfig.mjs';
 
 interface GlobalContextProps {
   account: string | null;
@@ -8,6 +10,7 @@ interface GlobalContextProps {
   currentUser: string;
   groupId: string | null;
   setGroupId: React.Dispatch<React.SetStateAction<string | null>>;
+  contract: ethers.Contract | null;
 }
 
 export const GlobalContext = createContext<GlobalContextProps>({
@@ -17,12 +20,14 @@ export const GlobalContext = createContext<GlobalContextProps>({
   currentUser: 'Alice',
   groupId: null,
   setGroupId: () => {},
+  contract: null,
 });
 
 export const GlobalProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [account, setAccount] = useState<string | null>(null);
   const [currentUser, setCurrentUser] = useState<string>('Alice'); // Mock current user
   const [groupId, setGroupId] = useState<string | null>(null);
+  const [contract, setContract] = useState<ethers.Contract | null>(null);
 
   const connectWallet = async () => {
     if (!(window as any).ethereum) {
@@ -33,6 +38,13 @@ export const GlobalProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     try {
       const accounts = await (window as any).ethereum.request({ method: 'eth_requestAccounts' });
       setAccount(accounts[0]);
+
+      const provider = new ethers.providers.Web3Provider((window as any).ethereum);
+      const signer = provider.getSigner();
+
+      const contractInstance = new ethers.Contract(contractAddress, contractABI, signer);
+      setContract(contractInstance);
+
       // Mock setting current user based on account
       if (accounts[0] === '0xABC123...') setCurrentUser('Alice');
       else if (accounts[0] === '0xDEF456...') setCurrentUser('Bob');
@@ -63,7 +75,7 @@ export const GlobalProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   }, []);
 
   return (
-    <GlobalContext.Provider value={{ account, setAccount, connectWallet, currentUser, groupId, setGroupId }}>
+    <GlobalContext.Provider value={{ account, setAccount, connectWallet, currentUser, groupId, setGroupId, contract }}>
       {children}
     </GlobalContext.Provider>
   );
