@@ -44,7 +44,7 @@ export async function initializeXMTPClient() {
 	const wallet = new ethers.Wallet(privateKey);
 
 	// Initialize the XMTP client
-	const xmtp = await Client.create(wallet, { env: "dev" }); // Use 'production' if you are in production
+	const xmtp = await Client.create(wallet, { env: "production" });
 
 	return xmtp;
 }

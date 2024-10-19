@@ -167,6 +167,7 @@ async function updateExpenseWithAttestation(
 /**
  * Function to create an expense attestation
  */
+// Function to create an expense attestation
 export async function createAttestation(
 	expenseId,
 	payer,
@@ -205,9 +206,21 @@ export async function createAttestation(
 		// Initialiser le client XMTP
 		const xmtpClient = await initializeXMTPClient();
 
-		// Envoyer une notification à chaque participant
-		for (const participant of participants) {
-			const messageContent = `Une nouvelle attestation a été créée avec succès pour l'expense "${description}". Montant : ${amount}. Vous êtes impliqué dans cette transaction.`;
+		// Envoyer une notification à chaque participant avec plus de détails, y compris leur part en montant
+		for (let i = 0; i < participants.length; i++) {
+			const participant = participants[i];
+			const share = shares[i]; // Récupérer la part correspondante
+			const participantAmount = (amount * share) / 100; // Calculer le montant correspondant à la part
+
+			const messageContent = `
+				Montant total : ${amount}.
+				Votre part : ${participantAmount} (${share}% du montant total).
+				ID de l'attestation : ${res.attestationId}.
+				ID de la dépense : ${expenseId}.
+				Schema ID : ${schemaConfig.schemaId}.
+				Indexing Value : ${res.indexingValue}.
+			`;
+
 			await sendXMTPNotification(xmtpClient, participant, messageContent);
 		}
 
@@ -272,8 +285,7 @@ async function main() {
 		const groupName = "Test Group";
 		const groupMembers = [
 			"0x1234567890abcdef1234567890abcdef12345678", // Payer
-			"0xabcdefabcdefabcdefabcdefabcdefabcdefabcd",
-			"0x7890123456789012345678901234567890123456",
+			"0xEaEc938211a3AB271EDb1B9FeDCFa472dB30c02f",
 		];
 		const groupId = await createGroupOnChain(groupName, groupMembers);
 		console.log(`Group created with ID: ${groupId}`);
@@ -284,7 +296,7 @@ async function main() {
 		const description = "Restaurant meal";
 		const participants = [
 			"0x8503d935eA859dF168625a7326f5FFC2c5807Dec",
-			"0x7890123456789012345678901234567890123456",
+			"0xEaEc938211a3AB271EDb1B9FeDCFa472dB30c02f",
 		]; // Participant addresses
 		const shares = [60, 40]; // Participant shares
 		const groupIdToUse = groupId; // Use the created group ID
