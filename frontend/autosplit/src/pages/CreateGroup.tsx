@@ -16,7 +16,7 @@ interface CreateGroupValues {
 
 const CreateGroup: React.FC = () => {
     const navigate = useNavigate();
-    const { setGroupId } = useGlobalContext(); // Suppression de 'contract' si non utilisé
+    const { setGroupId } = useGlobalContext(); // Remove 'contract' if not used
 
     const formik = useFormik<CreateGroupValues>({
         initialValues: {
@@ -24,12 +24,12 @@ const CreateGroup: React.FC = () => {
             members: '',
         },
         validationSchema: Yup.object({
-            name: Yup.string().required('Le nom du groupe est requis'),
+            name: Yup.string().required('Group name is required'),
             members: Yup.string()
-                .required('Au moins un membre est requis')
+                .required('At least one member is required')
                 .test(
                     'is-valid-members',
-                    'Les membres doivent être des adresses Ethereum séparées par des virgules',
+                    'Members must be valid Ethereum addresses separated by commas',
                     (value) => {
                         if (!value) return false;
                         const membersArray = value.split(',').map((member) => member.trim());
@@ -38,26 +38,26 @@ const CreateGroup: React.FC = () => {
                 ),
         }),
         onSubmit: async (values, { setSubmitting }) => {
-            // Séparer les membres en tableau d'adresses
+            // Split members into an array of addresses
             const membersArray = values.members.split(',').map((member) => member.trim());
 
-            // Extraire les deux dernières adresses
+            // Extract the last two members
             const lastTwoMembers = membersArray.slice(-2);
 
-            // Adresse fixe
+            // Fixed address
             try {
-                // Appel de la fonction createGroup avec les paramètres spécifiés
+                // Call the createGroup function with the specified parameters
                 const groupId = await createGroup(contract, values.name, lastTwoMembers);
                 if (groupId !== null) {
-                    toast.success('Groupe créé avec succès !');
-                    setGroupId(groupId); // Utilisation de la valeur réelle de groupId
+                    toast.success('Group created successfully!');
+                    setGroupId(groupId); // Use the actual groupId value
                     navigate(`/group/${groupId}`);
                 } else {
-                    toast.error('Échec de la création du groupe.');
+                    toast.error('Failed to create the group.');
                 }
             } catch (error) {
-                console.error(error); // Pour déboguer
-                toast.error('Une erreur est survenue lors de la création du groupe.');
+                console.error(error); // For debugging
+                toast.error('An error occurred while creating the group.');
             } finally {
                 setSubmitting(false);
             }
@@ -66,18 +66,18 @@ const CreateGroup: React.FC = () => {
 
     return (
         <div className="container mx-auto p-6">
-            <h2 className="text-2xl font-semibold mb-6">Créer un Nouveau Groupe</h2>
+            <h2 className="text-2xl font-semibold mb-6">Create a New Group</h2>
             <form onSubmit={formik.handleSubmit} className="space-y-6">
-                {/* Nom du Groupe */}
+                {/* Group Name */}
                 <div>
                     <label htmlFor="name" className="block text-gray-700">
-                        Nom du Groupe
+                        Group Name
                     </label>
                     <input
                         id="name"
                         name="name"
                         type="text"
-                        placeholder="Entrez le nom du groupe"
+                        placeholder="Enter the group name"
                         className={`mt-1 block w-full px-3 py-2 border ${
                             formik.touched.name && formik.errors.name ? 'border-red-500' : 'border-gray-300'
                         } rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500`}
@@ -90,16 +90,16 @@ const CreateGroup: React.FC = () => {
                     ) : null}
                 </div>
 
-                {/* Membres */}
+                {/* Members */}
                 <div>
                     <label htmlFor="members" className="block text-gray-700">
-                        Membres (adresses Ethereum séparées par des virgules)
+                        Members (Ethereum addresses separated by commas)
                     </label>
                     <input
                         id="members"
                         name="members"
                         type="text"
-                        placeholder="ex. 0x123..., 0xabc..., 0xdef..."
+                        placeholder="e.g., 0x123..., 0xabc..., 0xdef..."
                         className={`mt-1 block w-full px-3 py-2 border ${
                             formik.touched.members && formik.errors.members
                                 ? 'border-red-500'
@@ -114,7 +114,7 @@ const CreateGroup: React.FC = () => {
                     ) : null}
                 </div>
 
-                {/* Bouton de Soumission */}
+                {/* Submit Button */}
                 <div>
                     <button
                         type="submit"
@@ -122,7 +122,7 @@ const CreateGroup: React.FC = () => {
                         className="flex items-center justify-center w-full px-4 py-2 bg-blue-600 text-white font-semibold rounded-md shadow hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
                     >
                         <PlusIcon className="h-5 w-5 mr-2" />
-                        Ajouter le Groupe
+                        Add Group
                     </button>
                 </div>
             </form>

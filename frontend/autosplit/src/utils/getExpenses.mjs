@@ -21,7 +21,7 @@ let wallet;
 try {
   // const privateKey = process.env.REACT_APP_PRIVATE_KEY;
   const privateKey =
-    "0x817b16d9e7fbeddcec78646c8257aa2e4ea66284b7ee608895c54f3cf0fc2b90";
+    "0xef060cb7d3f8ec2db57965356a38775806ed527dafe85a1ecee920f1673d4b0d";
   if (!privateKey) {
     console.error(
       "REACT_APP_PRIVATE_KEY is not defined in environment variables.",
@@ -80,25 +80,9 @@ export const getUserDebts = async (contract, users) => {
  */
 export const repayDebt = async (contract, creditor, amountEther) => {
   try {
-    // Fetch current debt
-    const currentDebt = await getDebt(contract, creditor);
-    if (!currentDebt) {
-      console.error("Unable to fetch current debt.");
-      return false;
-    }
-
-    const amountToRepay = ethers.utils.parseEther(amountEther);
-    const currentDebtWei = ethers.utils.parseEther(currentDebt);
-
-    // Check if repayment exceeds debt
-    if (amountToRepay.gt(currentDebtWei)) {
-      console.error("Repayment amount exceeds the outstanding debt.");
-      return false;
-    }
-
-    const tx = await contract.repayDebt(creditor, amountToRepay, {
-      value: amountToRepay,
-      gasLimit: ethers.utils.hexlify(100000)
+    const amountWei = ethers.utils.parseEther(amountEther);
+    const tx = await contract.repayDebt(creditor, amountWei, {
+      value: amountWei,
     });
     console.log("Repay debt transaction sent. Hash:", tx.hash);
 
@@ -110,7 +94,6 @@ export const repayDebt = async (contract, creditor, amountEther) => {
     return false;
   }
 };
-
 
 
 
@@ -211,13 +194,12 @@ export async function createExpense(
     //const groupIdBigInt = BigInt(groupId);
 
     const tx = await contract.createExpense(
-      amount,
+      groupId,
       description,
+      amount,
       participants,
       shares,
-      groupId,
     );
-
     console.log("Transaction de création de dépense envoyée. Hash :", tx.hash);
 
     const receipt = await tx.wait();

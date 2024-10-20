@@ -24,7 +24,9 @@ const Dashboard: React.FC = () => {
       }
       const groupsData = await getAllGroups(contract);
       if (groupsData) {
-        setGroups(groupsData);
+        // Filter out groups with ID 3 and 4
+        const filteredGroups = groupsData.filter((group: Group) => group.id !== 3 && group.id !== 4 && group.id !== 5);
+        setGroups(filteredGroups);
       } else {
         setGroups([]); // Fallback to an empty array if groupsData is null
       }

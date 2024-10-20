@@ -59,6 +59,13 @@ const Group: React.FC = () => {
   const [activeSection, setActiveSection] = useState<Section>("Expenses");
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  // Check if the group is ID 3 or 4, and block it
+  useEffect(() => {
+    if (id === '3' || id === '4') {
+      setError("Group not available.");
+      setLoading(false);
+    }
+  }, [id]);
 
   // State for creating expenses
   const [isCreating, setIsCreating] = useState<boolean>(false);
