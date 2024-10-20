@@ -7,18 +7,26 @@ import Users from "../components/GroupSections/Users";
 import {
   getGroup,
   getGroupExpenses,
+  getUserDebts,
+  repayDebt,
   contract,
 } from "../utils/getExpenses.mjs";
-import { ethers } from "ethers"; // Already imported
+import { ethers } from "ethers";
 
-// Import the required functions from attestation.mjs
+// Import functions from the attestation module
 import {
   ensureSchema,
   createAttestation,
   updateExpenseWithAttestation,
 } from "../Sign-Protocol/attestation.mjs";
 
-type Section = "Expenses" | "Balances" | "Users";
+// Import functions for notifications
+import {
+  initializeXMTPClient,
+  sendXMTPNotification,
+} from "../Sign-Protocol/notification.mjs";
+
+type Section = "Expenses" | "Balances" | "Users" | "Debts";
 
 interface GroupData {
   id: number;
@@ -37,15 +45,22 @@ interface Expense {
   isSettled: boolean;
 }
 
+interface Debt {
+  debtor: string;
+  creditor: string;
+  amount: string; // Amount in ETH as a string
+}
+
 const Group: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const [group, setGroup] = useState<GroupData | null>(null);
   const [expenses, setExpenses] = useState<Expense[]>([]);
+  const [debts, setDebts] = useState<Debt[]>([]);
   const [activeSection, setActiveSection] = useState<Section>("Expenses");
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
-  // State for Expense Creation
+  // State for creating expenses
   const [isCreating, setIsCreating] = useState<boolean>(false);
   const [newExpense, setNewExpense] = useState({
     amountEther: "",
@@ -56,8 +71,17 @@ const Group: React.FC = () => {
   const [creationError, setCreationError] = useState<string | null>(null);
   const [creationLoading, setCreationLoading] = useState<boolean>(false);
 
+  // State for repaying debts
+  const [isRepaying, setIsRepaying] = useState<boolean>(false);
+  const [repayDetails, setRepayDetails] = useState({
+    creditor: "",
+    amountEther: "",
+  });
+  const [repayError, setRepayError] = useState<string | null>(null);
+  const [repayLoading, setRepayLoading] = useState<boolean>(false);
+
   useEffect(() => {
-    const fetchGroupAndExpenses = async () => {
+    const fetchGroupData = async () => {
       if (!contract) {
         setError("Contract not available.");
         setLoading(false);
@@ -82,12 +106,12 @@ const Group: React.FC = () => {
         if (fetchedGroup) {
           setGroup(fetchedGroup);
 
-          // Fetch group's expenses
+          // Fetch group expenses
           const fetchedExpensesRaw = await getGroupExpenses(contract, groupId);
 
-          console.log("Fetched Expenses:", fetchedExpensesRaw); // Debug log
+          console.log("Fetched expenses:", fetchedExpensesRaw); // Debug log
 
-          // Map fetched expenses to Expense interface
+          // Map fetched expenses to the Expense interface
           const fetchedExpenses: Expense[] = fetchedExpensesRaw.map(
             (expense: any) => ({
               id: expense.id,
@@ -99,13 +123,13 @@ const Group: React.FC = () => {
             })
           );
 
-          console.log("Mapped Expenses:", fetchedExpenses); // Debug log
+          console.log("Mapped expenses:", fetchedExpenses); // Debug log
 
-          if (fetchedExpenses.length > 0) {
-            setExpenses(fetchedExpenses);
-          } else {
-            setError("No expenses found for this group.");
-          }
+          setExpenses(fetchedExpenses);
+
+          // Fetch debts between individuals
+          const fetchedDebts: Debt[] = await getUserDebts(contract, fetchedGroup.members);
+          setDebts(fetchedDebts);
         } else {
           setError("Group not found.");
         }
@@ -117,10 +141,10 @@ const Group: React.FC = () => {
       }
     };
 
-    fetchGroupAndExpenses();
+    fetchGroupData();
   }, [id]);
 
-  // Handler to open the creation form
+  // Handlers to open/close the create expense form
   const handleOpenCreate = () => {
     setIsCreating(true);
     setCreationError(null);
@@ -132,7 +156,6 @@ const Group: React.FC = () => {
     });
   };
 
-  // Handler to close the creation form
   const handleCloseCreate = () => {
     setIsCreating(false);
     setCreationError(null);
@@ -148,7 +171,7 @@ const Group: React.FC = () => {
     });
   };
 
-  // Expense Creation Function
+  // Function to create an expense
   const createExpense = async (
     contract: any,
     groupId: number,
@@ -158,10 +181,10 @@ const Group: React.FC = () => {
     sharesEther: string[]
   ): Promise<number | null> => {
     try {
-      const amount = ethers.utils.parseEther(amountEther); // Converts ETH to wei (BigNumber)
+      const amount = ethers.utils.parseEther(amountEther); // Convert ETH to wei (BigNumber)
       const shares = sharesEther.map((share) =>
         ethers.utils.parseEther(share)
-      ); // Converts shares to wei (BigNumber)
+      ); // Convert shares to wei (BigNumber)
 
       // Use BigNumber for totalShares
       let totalShares = ethers.BigNumber.from(0);
@@ -171,7 +194,7 @@ const Group: React.FC = () => {
 
       if (!totalShares.eq(amount)) {
         throw new Error(
-          "The sum of shares does not equal the total amount."
+          "The sum of shares does not match the total amount."
         );
       }
 
@@ -194,11 +217,11 @@ const Group: React.FC = () => {
           const parsedLog = contract.interface.parseLog(log);
           if (parsedLog.name === "ExpenseCreated") {
             expenseId = Number(parsedLog.args.id);
-            console.log(`Created Expense ID: ${expenseId}`);
+            console.log(`Created expense ID: ${expenseId}`);
             break;
           }
         } catch (e) {
-          // Ignore logs that are not from our contract
+          // Ignore logs not from our contract
         }
       }
 
@@ -213,7 +236,7 @@ const Group: React.FC = () => {
     }
   };
 
-  // Handler for form submission
+  // Handler to create an expense
   const handleCreateExpense = async (e: React.FormEvent) => {
     e.preventDefault();
     setCreationLoading(true);
@@ -233,7 +256,7 @@ const Group: React.FC = () => {
     const sharesArray = sharesEther.split(",").map((s) => s.trim());
 
     if (participantsArray.length !== sharesArray.length) {
-      setCreationError("Participants and shares count must match.");
+      setCreationError("Number of participants and shares must match.");
       setCreationLoading(false);
       return;
     }
@@ -251,7 +274,7 @@ const Group: React.FC = () => {
       return;
     }
 
-    // Validate shares are numeric and positive
+    // Validate that shares are numeric and positive
     const invalidShares = sharesArray.filter(
       (share) => isNaN(Number(share)) || Number(share) <= 0
     );
@@ -263,7 +286,7 @@ const Group: React.FC = () => {
       return;
     }
 
-    // Validate amountEther is numeric and positive
+    // Validate that the amount is numeric and positive
     if (isNaN(Number(amountEther)) || Number(amountEther) <= 0) {
       setCreationError("Amount must be a positive number.");
       setCreationLoading(false);
@@ -282,64 +305,112 @@ const Group: React.FC = () => {
       );
 
       if (expenseId !== null) {
-        // **Attestation Process Starts Here**
+        // **Attestation Process**
 
-        // Ensure the schema exists and is stored on-chain
+        // Ensure the schema exists and is stored on the blockchain
         const schemaId = await ensureSchema();
 
         // Initialize ethers provider and signer
-        const provider = new ethers.providers.Web3Provider(
-          (window as any).ethereum
-        );
-        await provider.send("eth_requestAccounts", []); // Request access
-        const signer = provider.getSigner();
-        const payerAddress = await signer.getAddress();
+        if (typeof window !== "undefined" && (window as any).ethereum) {
+          const provider = new ethers.providers.Web3Provider(
+            (window as any).ethereum
+          );
+          await provider.send("eth_requestAccounts", []); // Request access
+          const signer = provider.getSigner();
+          const payerAddress = await signer.getAddress();
 
-        // Prepare data for attestation
-        const amountWei = ethers.utils.parseEther(amountEther).toString();
-        const sharesWei = sharesArray.map((share) =>
-          ethers.utils.parseEther(share).toString()
-        );
+          // Prepare data for attestation
+          const amountWei = ethers.utils.parseEther(amountEther).toString();
+          const sharesWei = sharesArray.map((share) =>
+            ethers.utils.parseEther(share).toString()
+          );
 
-        // Create the attestation
-        const attestation = await createAttestation(
-          expenseId,
-          payerAddress,
-          amountWei,
-          description,
-          participantsArray,
-          sharesWei,
-          groupId
-        );
-
-        if (attestation && attestation.attestationId) {
-          // Update the expense with the attestation details on-chain
-          await updateExpenseWithAttestation(
+          // Create attestation
+          const attestation = await createAttestation(
             expenseId,
-            attestation.attestationId,
-            schemaId,
-            attestation.indexingValue
+            payerAddress,
+            amountWei,
+            description,
+            participantsArray,
+            sharesWei,
+            groupId
           );
 
-          // Fetch updated expenses list
-          const fetchedExpensesRaw = await getGroupExpenses(contract, groupId);
+          if (attestation && attestation.attestationId) {
+            // Update expense with attestation details on the blockchain
+            await updateExpenseWithAttestation(
+              expenseId,
+              attestation.attestationId,
+              schemaId,
+              attestation.indexingValue
+            );
 
-          const fetchedExpenses: Expense[] = fetchedExpensesRaw.map(
-            (expense: any) => ({
-              id: expense.id,
-              payer: expense.payer,
-              amount: expense.amount, // Already in ETH as a string
-              description: expense.description,
-              participants: expense.participants,
-              isSettled: expense.isSettled,
-            })
-          );
+            // **Initialize XMTP client**
+            const xmtpClient = await initializeXMTPClient();
 
-          setExpenses(fetchedExpenses);
-          setIsCreating(false);
-          alert("Expense and attestation created successfully!");
+            // **Prepare attestation data to send**
+            const attestationData = {
+              id: attestation.attestationId,
+              payer: payerAddress,
+              amount: amountEther,
+              groupId: groupId,
+              description: description,
+              participants: participantsArray,
+              shares: sharesArray,
+              isSettled: false,
+            };
+
+            const messageContent = `New expense created:
+ID: ${attestationData.id}
+Payer: ${attestationData.payer}
+Amount: ${attestationData.amount} ETH
+Description: ${attestationData.description}
+Participants: ${attestationData.participants.join(", ")}
+Shares: ${attestationData.shares.join(", ")} ETH
+Group ID: ${attestationData.groupId}`;
+
+            // **Send notification to each participant**
+            for (const participant of attestationData.participants) {
+              // Exclude payer if they are also a participant
+              if (
+                participant.toLowerCase() !== attestationData.payer.toLowerCase()
+              ) {
+                await sendXMTPNotification(
+                  xmtpClient,
+                  participant,
+                  messageContent
+                );
+              }
+            }
+
+            // **Refresh expense list and notify the user**
+            const fetchedExpensesRaw = await getGroupExpenses(contract, groupId);
+
+            const fetchedExpenses: Expense[] = fetchedExpensesRaw.map(
+              (expense: any) => ({
+                id: expense.id,
+                payer: expense.payer,
+                amount: expense.amount, // Already in ETH as a string
+                description: expense.description,
+                participants: expense.participants,
+                isSettled: expense.isSettled,
+              })
+            );
+
+            setExpenses(fetchedExpenses);
+            setIsCreating(false);
+            alert(
+              "Expense and attestation created successfully, notifications sent!"
+            );
+          } else {
+            setCreationError("Failed to create attestation.");
+          }
         } else {
-          setCreationError("Failed to create attestation.");
+          setCreationError(
+            "Ethereum provider not found. Please install MetaMask or another Ethereum wallet."
+          );
+          setCreationLoading(false);
+          return;
         }
       } else {
         setCreationError("Failed to create expense.");
@@ -349,6 +420,78 @@ const Group: React.FC = () => {
       console.error(err);
     } finally {
       setCreationLoading(false);
+    }
+  };
+
+  // Handler to open/close the repay debt form
+  const handleOpenRepay = () => {
+    setIsRepaying(true);
+    setRepayError(null);
+    setRepayDetails({
+      creditor: "",
+      amountEther: "",
+    });
+  };
+
+  const handleCloseRepay = () => {
+    setIsRepaying(false);
+    setRepayError(null);
+  };
+
+  // Handler for repay form input changes
+  const handleRepayInputChange = (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    setRepayDetails({
+      ...repayDetails,
+      [e.target.name]: e.target.value,
+    });
+  };
+
+  // Handler to repay a debt
+  const handleRepayDebt = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setRepayLoading(true);
+    setRepayError(null);
+
+    const { creditor, amountEther } = repayDetails;
+
+    // Validate inputs
+    if (!creditor || !amountEther) {
+      setRepayError("All fields are required.");
+      setRepayLoading(false);
+      return;
+    }
+
+    if (!ethers.utils.isAddress(creditor)) {
+      setRepayError("Invalid creditor Ethereum address.");
+      setRepayLoading(false);
+      return;
+    }
+
+    if (isNaN(Number(amountEther)) || Number(amountEther) <= 0) {
+      setRepayError("Amount must be a positive number.");
+      setRepayLoading(false);
+      return;
+    }
+
+    try {
+      // Repay the debt
+      const tx = await repayDebt(contract, creditor, amountEther);
+      if (tx) {
+        // Refresh debts
+        const fetchedDebts: Debt[] = await getUserDebts(contract, group!.members);
+        setDebts(fetchedDebts);
+        setIsRepaying(false);
+        alert("Debt repaid successfully!");
+      } else {
+        setRepayError("Failed to repay debt.");
+      }
+    } catch (err) {
+      setRepayError("An error occurred while repaying the debt.");
+      console.error(err);
+    } finally {
+      setRepayLoading(false);
     }
   };
 
@@ -367,7 +510,7 @@ const Group: React.FC = () => {
           {error}
         </h2>
         <Link to="/dashboard" className="text-blue-500 hover:underline">
-          Back to Dashboard
+          Return to Dashboard
         </Link>
       </div>
     );
@@ -386,7 +529,7 @@ const Group: React.FC = () => {
       {/* Navigation Tabs */}
       <div className="mb-6 border-b">
         <nav className="-mb-px flex space-x-8">
-          {(["Expenses", "Balances", "Users"] as Section[]).map(
+          {(["Expenses", "Balances", "Users", "Debts"] as Section[]).map(
             (section) => (
               <button
                 key={section}
@@ -404,7 +547,7 @@ const Group: React.FC = () => {
         </nav>
       </div>
 
-      {/* Active Section Content */}
+      {/* Content for Active Section */}
       <div className="mb-8">
         {activeSection === "Expenses" && (
           <div className="space-y-6">
@@ -418,7 +561,7 @@ const Group: React.FC = () => {
               </button>
             </div>
 
-            {/* Create Expense Form Modal */}
+            {/* Modal for Create Expense Form */}
             {isCreating && (
               <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
                 <div className="bg-white rounded-lg p-6 w-full max-w-md">
@@ -426,9 +569,7 @@ const Group: React.FC = () => {
                     Create New Expense
                   </h2>
                   {creationError && (
-                    <p className="text-red-500 mb-2">
-                      {creationError}
-                    </p>
+                    <p className="text-red-500 mb-2">{creationError}</p>
                   )}
                   <form
                     onSubmit={handleCreateExpense}
@@ -461,7 +602,7 @@ const Group: React.FC = () => {
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700">
-                        Participant Addresses (comma separated)
+                        Participant Addresses (comma-separated)
                       </label>
                       <input
                         type="text"
@@ -477,7 +618,7 @@ const Group: React.FC = () => {
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700">
-                        Shares (ETH, comma separated)
+                        Shares (ETH, comma-separated)
                       </label>
                       <input
                         type="text"
@@ -488,7 +629,7 @@ const Group: React.FC = () => {
                         placeholder="e.g., 0.5, 0.5, 0.5"
                       />
                       <small className="text-gray-500">
-                        Total shares must equal the total amount.
+                        The sum of shares must equal the total amount.
                       </small>
                     </div>
                     <div className="flex justify-end space-x-2">
@@ -504,9 +645,7 @@ const Group: React.FC = () => {
                         disabled={creationLoading}
                         className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
                       >
-                        {creationLoading
-                          ? "Creating..."
-                          : "Create Expense"}
+                        {creationLoading ? "Creating..." : "Create Expense"}
                       </button>
                     </div>
                   </form>
@@ -514,7 +653,7 @@ const Group: React.FC = () => {
               </div>
             )}
 
-            {/* Expenses List */}
+            {/* List of Expenses */}
             {expenses.length > 0 ? (
               expenses.map((expense) => (
                 <div
@@ -549,14 +688,110 @@ const Group: React.FC = () => {
                 </div>
               ))
             ) : (
-              <p className="text-gray-600">
-                No expenses for this group.
-              </p>
+              <p className="text-gray-600">No expenses for this group.</p>
             )}
           </div>
         )}
         {activeSection === "Balances" && <Balances />}
         {activeSection === "Users" && <Users />}
+        {activeSection === "Debts" && (
+          <div className="space-y-6">
+            {/* Button to Open Repay Debt Form */}
+            <div className="flex justify-end">
+              <button
+                onClick={handleOpenRepay}
+                className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
+              >
+                Repay Debt
+              </button>
+            </div>
+
+            {/* Modal for Repay Debt Form */}
+            {isRepaying && (
+              <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+                <div className="bg-white rounded-lg p-6 w-full max-w-md">
+                  <h2 className="text-2xl font-semibold mb-4">
+                    Repay Debt
+                  </h2>
+                  {repayError && (
+                    <p className="text-red-500 mb-2">{repayError}</p>
+                  )}
+                  <form onSubmit={handleRepayDebt} className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">
+                        Creditor Address
+                      </label>
+                      <input
+                        type="text"
+                        name="creditor"
+                        value={repayDetails.creditor}
+                        onChange={handleRepayInputChange}
+                        className="mt-1 block w-full border border-gray-300 rounded-md p-2"
+                        placeholder="e.g., 0xabc..."
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">
+                        Amount to Repay (ETH)
+                      </label>
+                      <input
+                        type="text"
+                        name="amountEther"
+                        value={repayDetails.amountEther}
+                        onChange={handleRepayInputChange}
+                        className="mt-1 block w-full border border-gray-300 rounded-md p-2"
+                        placeholder="e.g., 0.5"
+                      />
+                    </div>
+                    <div className="flex justify-end space-x-2">
+                      <button
+                        type="button"
+                        onClick={handleCloseRepay}
+                        className="px-4 py-2 bg-gray-300 text-gray-700 rounded hover:bg-gray-400"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        type="submit"
+                        disabled={repayLoading}
+                        className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
+                      >
+                        {repayLoading ? "Processing..." : "Repay Debt"}
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            )}
+
+            {/* List of Debts */}
+            {debts.length > 0 ? (
+              debts.map((debt, index) => (
+                <div
+                  key={index}
+                  className="bg-white shadow-md rounded-lg p-6"
+                >
+                  <div className="space-y-1">
+                    <p className="text-gray-700">
+                      <span className="font-medium">Debtor:</span>{" "}
+                      {debt.debtor}
+                    </p>
+                    <p className="text-gray-700">
+                      <span className="font-medium">Creditor:</span>{" "}
+                      {debt.creditor}
+                    </p>
+                    <p className="text-gray-700">
+                      <span className="font-medium">Amount:</span>{" "}
+                      {debt.amount} ETH
+                    </p>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <p className="text-gray-600">No debts between individuals.</p>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );
