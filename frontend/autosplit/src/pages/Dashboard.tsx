@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { useGlobalContext } from '../context/GlobalState';
 import { PlusIcon } from '@heroicons/react/solid';
 import { getAllGroups } from '../utils/getExpenses.mjs';
+import {contract} from '../utils/getExpenses.mjs';
 
 interface Group {
   id: number;
@@ -14,7 +15,7 @@ interface Group {
 
 const Dashboard: React.FC = () => {
   const [groups, setGroups] = useState<Group[]>([]);
-  const { setGroupId, contract } = useGlobalContext();
+  const { setGroupId } = useGlobalContext();
 
 
   useEffect(() => {

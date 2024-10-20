@@ -1,85 +1,127 @@
-// src/components/GroupSections/Expenses.tsx
+// // src/components/GroupSections/Expenses.tsx
+// import React, { useEffect, useState, useContext } from 'react';
+// import { PlusIcon } from '@heroicons/react/solid';
+// import { useNavigate } from 'react-router-dom';
+// import { toast } from 'react-toastify';
+// import { useGlobalContext } from '../context/GlobalState';
+// import { getGroupExpenses, contract } from '../utils/getExpenses.mjs';
+// // import { ContractContext } from '../../context/ContractContext';
 
-import React from 'react';
-import { PlusIcon } from '@heroicons/react/solid';
-import { useNavigate } from 'react-router-dom';
-import { toast } from 'react-toastify';
-import { useGlobalContext } from './../context/GlobalState';
+// interface Expense {
+//   id: number;
+//   groupId: number;
+//   payer: string;
+//   amount: string;
+//   description: string;
+//   participants: string[];
+//   isSettled: boolean;
+// }
 
-interface Expense {
-  id: number;
-  groupId: number;
-  payer: string;
-  amount: string;
-  description: string;
-  participants: string[];
-  isSettled: boolean;
-}
+// interface ExpensesProps {
+//   groupId: number;
+// }
 
-interface ExpensesProps {
-  expenses: Expense[];
-}
+// const Expenses: React.FC<ExpensesProps> = ({ groupId }) => {
+//   const navigate = useNavigate();
+//   const { currentUser } = useGlobalContext();
 
-const Expenses: React.FC<ExpensesProps> = ({ expenses }) => {
-  const navigate = useNavigate();
-  const { groupId } = useGlobalContext();
 
-  // Group expenses by date (assuming you have a date property)
-  const groupedExpenses = expenses.reduce((acc, expense) => {
-    const date = new Date().toISOString().split('T')[0]; // Replace with actual date if available
-    if (!acc[date]) acc[date] = [];
-    acc[date].push(expense);
-    return acc;
-  }, {} as { [key: string]: Expense[] });
+//   const [expenses, setExpenses] = useState<Expense[]>([]);
+//   const [loading, setLoading] = useState<boolean>(true);
+//   const [error, setError] = useState<string | null>(null);
 
-  const handleAddExpense = () => {
-    if (groupId) {
-      navigate(`/add-expense/${groupId}`);
-    } else {
-      toast.error('Group ID is missing.');
-    }
-  };
+//   useEffect(() => {
+//     const fetchExpenses = async () => {
+//       if (!contract) {
+//         setError('Contrat non disponible.');
+//         setLoading(false);
+//         return;
+//       }
 
-  return (
-    <div>
-      {/* Header Section */}
-      <div className="flex justify-between items-center mb-6">
-        <div>
-          <h3 className="text-lg font-semibold">Total Expenses: {expenses.length}</h3>
-        </div>
-        <button
-          onClick={handleAddExpense}
-          className="flex items-center px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
-        >
-          <PlusIcon className="h-5 w-5 mr-2" />
-          Add Expense
-        </button>
-      </div>
+//       if (!groupId) {
+//         setError('ID de groupe non fourni.');
+//         setLoading(false);
+//         return;
+//       }
 
-      {/* Expenses Grouped by Date */}
-      {Object.keys(groupedExpenses)
-        .sort((a, b) => new Date(b).getTime() - new Date(a).getTime())
-        .map((date) => (
-          <div key={date} className="mb-8">
-            <h4 className="text-md font-semibold mb-4">{new Date(date).toDateString()}</h4>
-            <ul>
-              {groupedExpenses[date].map((expense) => (
-                <li key={expense.id} className="mb-4 p-4 bg-white rounded shadow">
-                  <h5 className="text-md font-bold">{expense.description}</h5>
-                  <p className="text-sm text-gray-600">Paid by: {expense.payer}</p>
-                  <div className="flex justify-between items-center mt-2">
-                    <span className="text-sm text-blue-600">
-                      Participants: {expense.participants.length}
-                    </span>
-                    <span className="text-sm font-semibold">{expense.amount} ETH</span>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          </div>
-        ))}
-    </div>
-  );
-};
+//       try {
+//         const fetchedExpenses = await getGroupExpenses(contract, groupId);
+//         if (fetchedExpenses) {
+//           setExpenses(fetchedExpenses);
+//         } else {
+//           setError('Aucune dépense trouvée pour ce groupe.');
+//         }
+//       } catch (err) {
+//         setError('Erreur lors de la récupération des dépenses.');
+//         console.error(err);
+//       } finally {
+//         setLoading(false);
+//       }
+//     };
 
-export default Expenses;
+//     fetchExpenses();
+//   }, [groupId, contract]);
+
+//   const myExpenses = expenses.filter(expense => expense.payer === currentUser);
+//   const totalExpenses = expenses.reduce((sum, expense) => sum + parseFloat(expense.amount), 0);
+
+//   const handleAddExpense = () => {
+//     if (groupId) {
+//       navigate(`/add-expense/${groupId}`);
+//     } else {
+//       toast.error('Group ID is missing.');
+//     }
+//   };
+
+//   if (loading) {
+//     return <div>Chargement des dépenses...</div>;
+//   }
+
+//   if (error) {
+//     return <div>Erreur : {error}</div>;
+//   }
+
+//   return (
+//     <div>
+//       {/* Section d'en-tête */}
+//       <div className="flex justify-between items-center mb-6">
+//         <div>
+//           <h3 className="text-lg font-semibold">Mes dépenses : {myExpenses.length}</h3>
+//           <h3 className="text-lg font-semibold">
+//             Total des dépenses : {totalExpenses.toFixed(2)} ETH
+//           </h3>
+//         </div>
+//         <button
+//           onClick={handleAddExpense}
+//           className="flex items-center px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
+//         >
+//           <PlusIcon className="h-5 w-5 mr-2" />
+//           Ajouter une dépense
+//         </button>
+//       </div>
+
+//       {/* Liste des dépenses */}
+//       <div>
+//         {expenses.length === 0 ? (
+//           <p>Aucune dépense trouvée pour ce groupe.</p>
+//         ) : (
+//           <ul>
+//             {expenses.map(expense => (
+//               <li key={expense.id} className="mb-4 p-4 bg-white rounded shadow">
+//                 <h5 className="text-md font-bold">Dépense #{expense.id}</h5>
+//                 <p className="text-sm text-gray-600">{expense.description}</p>
+//                 <div className="flex justify-between items-center mt-2">
+//                   <span className="text-sm text-blue-600">Payé par : {expense.payer}</span>
+//                   <span className="text-sm font-semibold">{expense.amount} ETH</span>
+//                 </div>
+//               </li>
+//             ))}
+//           </ul>
+//         )}
+//       </div>
+//     </div>
+//   );
+// };
+
+// export default Expenses;
+export{}
