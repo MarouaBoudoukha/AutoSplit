@@ -2,17 +2,19 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { MenuIcon, XIcon } from '@heroicons/react/outline';
+import logo from '../../logo.png';
 
 const Navbar: React.FC = () => {
 
   const [isOpen, setIsOpen] = useState(false);
 
   return (
-    <nav className="bg-white shadow-md">
+    <nav className="bg-white shadow-md" style={{ height: '130px' }}>
       <div className="container mx-auto px-4 py-4 flex justify-between items-center">
         <Link to="/" className="text-xl font-bold text-blue-600">
-          AutoSplit
+        <img src={logo} alt="App Logo" className="h-8 w-auto" style={{ height: '120px' }} />
         </Link>
+
         <div className="md:hidden">
           <button onClick={() => setIsOpen(!isOpen)}>
             {isOpen ? <XIcon className="h-6 w-6" /> : <MenuIcon className="h-6 w-6" />}
