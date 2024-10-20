@@ -8,8 +8,8 @@ interface GlobalContextProps {
   setAccount: React.Dispatch<React.SetStateAction<string | null>>;
   connectWallet: () => void;
   currentUser: string;
-  groupId: string | null;
-  setGroupId: React.Dispatch<React.SetStateAction<string | null>>;
+  groupId: number | null;
+  setGroupId: React.Dispatch<React.SetStateAction<number | null>>;
   contract: ethers.Contract | null;
 }
 
@@ -26,7 +26,7 @@ export const GlobalContext = createContext<GlobalContextProps>({
 export const GlobalProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [account, setAccount] = useState<string | null>(null);
   const [currentUser, setCurrentUser] = useState<string>('Alice'); // Mock current user
-  const [groupId, setGroupId] = useState<string | null>(null);
+  const [groupId, setGroupId] = useState<number | null>(null);
   const [contract, setContract] = useState<ethers.Contract | null>(null);
 
   const connectWallet = async () => {

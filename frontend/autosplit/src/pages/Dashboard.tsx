@@ -3,25 +3,34 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useGlobalContext } from '../context/GlobalState';
 import { PlusIcon } from '@heroicons/react/solid';
+import { getAllGroups } from '../utils/getExpenses.mjs';
 
 interface Group {
-  id: string;
+  id: number;
   name: string;
-  description: string;
+  members: string[];
+  expenseIds: number[];
 }
 
 const Dashboard: React.FC = () => {
   const [groups, setGroups] = useState<Group[]>([]);
-  const { setGroupId } = useGlobalContext();
+  const { setGroupId, contract } = useGlobalContext();
+
 
   useEffect(() => {
-    // Mock data for groups
-    const mockGroups: Group[] = [
-      { id: '1', name: 'Trip to Bali', description: '....' },
-      { id: '2', name: 'Office Party', description: '....'},
-      { id: '3', name: 'Dinner with Friends', description: '....'},
-    ];
-    setGroups(mockGroups);
+    const fetchGroups = async () => {
+      if (!contract) {
+        return;
+      }
+      const groupsData = await getAllGroups(contract);
+      if (groupsData) {
+        setGroups(groupsData);
+      } else {
+        setGroups([]); // Fallback to an empty array if groupsData is null
+      }
+    };
+
+    fetchGroups();
   }, []);
 
   return (
@@ -36,14 +45,7 @@ const Dashboard: React.FC = () => {
             className="block p-6 bg-white rounded-lg shadow hover:bg-gray-100"
           >
             <h3 className="text-xl font-bold">{group.name}</h3>
-            <p
-              className={`mt-2 ${
-                group.description.startsWith('-') ? 'text-red-500' : 'text-green-500'
-              }`}
-            >
-              Description: {group.description}
-
-            </p>
+            <p className="mt-2 text-gray-600">Members: {group.members.length}</p>
           </Link>
         ))}
       </div>
